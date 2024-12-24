@@ -1,0 +1,63 @@
+﻿<Window x:Class="USProApplication.Views.Modals.ServiceDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:USProApplication.Views.Modals"
+        mc:Ignorable="d"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        WindowStyle="ThreeDBorderWindow"
+        xmlns:vm="clr-namespace:USProApplication.ViewModels.Modals"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        Title="Информация об услуге" SizeToContent="Height" Width="600">
+
+    <Window.DataContext>
+        <vm:ServiceDialogViewModel/>
+    </Window.DataContext>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <materialDesign:Card Padding="10" Margin="7">
+            <StackPanel>
+                <DockPanel LastChildFill="True">
+                    <TextBlock Text="Наименование" FontSize="14"/>
+                    <TextBox VerticalAlignment="Center" Margin="6 0 0 0"
+                             Text="{Binding Service.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             FontSize="14"/>
+                </DockPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 4 0 0">
+                    <DockPanel LastChildFill="True" Width="340">
+                        <TextBlock Text="Аббривиатура" FontSize="14"/>
+                        <TextBox VerticalAlignment="Center" Margin="6 0 0 0"
+                                 HorizontalContentAlignment="Center"
+                                 Text="{Binding Service.Abbreviation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 FontSize="14"/>
+                    </DockPanel>
+                    <DockPanel LastChildFill="True" Width="200" Margin="8 0 0 0">
+                        <TextBlock Text="Стоимость" FontSize="14"/>
+                        <TextBox HorizontalContentAlignment="Center" VerticalAlignment="Center"
+                            Text="{Binding Service.Price, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, 
+                            TargetNullValue='', StringFormat=N2}"
+                            Margin="6 0 0 0" FontSize="14"
+                            />
+                    </DockPanel>
+                </StackPanel>
+                <TextBox DockPanel.Dock="Bottom" TabIndex="2" Height="100" Margin="0 14 0 0"
+                         VerticalContentAlignment="Top" FontSize="14" AcceptsReturn="True"
+                         Text="{Binding Service.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         VerticalScrollBarVisibility="Auto"
+                         materialDesign:HintAssist.Hint="Описание"/>
+            </StackPanel>
+        </materialDesign:Card>
+
+        <Button Grid.Row="2" Content="Сохранить" Margin="5" Width="175" TabIndex="4"
+            Command="{Binding Apply}"
+            Style="{StaticResource MaterialDesignRaisedButton}" Foreground="White" />
+    </Grid>
+</Window>

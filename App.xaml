@@ -1,0 +1,45 @@
+﻿<Application x:Class="USProApplication.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:local="clr-namespace:USProApplication"
+             xmlns:converters="clr-namespace:USProApplication.Converters"
+             StartupUri="Views/MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
+            
+            <!-- Подключение шрифта Gilroy -->
+            <FontFamily x:Key="GilroyRegular">pack://application:,,,/Fonts/#Gilroy Regular</FontFamily>
+            <FontFamily x:Key="GilroyBold">pack://application:,,,/Fonts/#Gilroy Bold</FontFamily>
+
+            <Style TargetType="TextBlock" BasedOn="{StaticResource MaterialDesignTextBlock}">
+                <Setter Property="FontFamily" Value="{StaticResource GilroyRegular}" />
+            </Style>
+
+            <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
+                <Setter Property="FontFamily" Value="{StaticResource GilroyRegular}" />
+            </Style>
+
+            <Style TargetType="Label" BasedOn="{StaticResource MaterialDesignLabel}">
+                <Setter Property="FontFamily" Value="{StaticResource GilroyRegular}" />
+            </Style>
+
+            <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
+                <Setter Property="FontFamily" Value="{StaticResource GilroyBold}" />
+            </Style>
+
+            <Style TargetType="DataGrid" BasedOn="{StaticResource MaterialDesignDataGrid}">
+                <Setter Property="FontFamily" Value="{StaticResource GilroyRegular}" />
+            </Style>
+
+            <ResourceDictionary.MergedDictionaries>
+
+                <materialDesign:BundledTheme BaseTheme="Light" 
+                                             PrimaryColor="Blue" 
+                                             SecondaryColor="Amber" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
