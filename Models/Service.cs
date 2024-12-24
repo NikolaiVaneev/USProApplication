@@ -21,7 +21,7 @@
         public string Abbreviation { get; set; } = string.Empty;
 
         /// <summary>
-        /// Стоимость
+        /// Cтоимость
         /// </summary>
         public decimal? Price { get; set; }
 

@@ -37,7 +37,10 @@
                         Style="{StaticResource MaterialDesignNavigationPrimaryListBox}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Title}" Padding="8" />
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="{Binding Icon}" Width="24" Height="24" Margin="0,0,8,0" />
+                                    <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+                                </StackPanel>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
@@ -54,10 +57,16 @@
                                           IsChecked="False" Width="30" Foreground="White"
                                           Style="{StaticResource MaterialDesignHamburgerToggleButton}" />
 
-                        <TextBlock  HorizontalAlignment="Center"
+                        <StackPanel Orientation="Horizontal"  HorizontalAlignment="Center">
+                            <materialDesign:PackIcon VerticalAlignment="Center" Foreground="White"
+                                Kind="{Binding ScreenIcon}" Width="24" Height="24" Margin="0,0,8,0" />
+                            <TextBlock 
                                    VerticalAlignment="Center"
                                    FontSize="20" Foreground="White"
                                    Text="{Binding CurrentScreenTitle}" />
+                        </StackPanel>
+                        
+
                     </Grid>
                 </materialDesign:ColorZone>
 

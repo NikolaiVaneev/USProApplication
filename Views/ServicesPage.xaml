@@ -45,16 +45,28 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Наименование" Width="auto" Binding="{Binding Name}" />
                 <DataGridTextColumn Header="Аббревиатура" Width="130" Binding="{Binding Abbreviation}" />
-                <DataGridTextColumn Header="Стоимость" Width="120" Binding="{Binding Price, StringFormat=C2}" />
+                <DataGridTextColumn Header="Cтоимость" Width="120" Binding="{Binding Price, StringFormat=C2}" />
                 <DataGridTextColumn Header="Описание" Width="*" Binding="{Binding Description}" />
             </DataGrid.Columns>
-            
+
             <DataGrid.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Добавить новую запись" Command="{Binding AddCommand}" />
+                    <MenuItem Header="Добавить новую запись" Command="{Binding AddCommand}">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="Plus" Width="16" Height="16"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
                     <Separator />
-                    <MenuItem Header="Редактировать" Command="{Binding EditCommand}" IsEnabled="{Binding SelectedService, Converter={StaticResource NullToBooleanConverter}}" />
-                    <MenuItem Header="Удалить" Command="{Binding DeleteCommand}" IsEnabled="{Binding SelectedService, Converter={StaticResource NullToBooleanConverter}}" />
+                    <MenuItem Header="Редактировать" Command="{Binding EditCommand}" IsEnabled="{Binding SelectedService, Converter={StaticResource NullToBooleanConverter}}">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="Pencil" Width="16" Height="16" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Удалить" Command="{Binding DeleteCommand}" IsEnabled="{Binding SelectedService, Converter={StaticResource NullToBooleanConverter}}">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="Delete" Width="16" Height="16" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </ContextMenu>
             </DataGrid.ContextMenu>
         </DataGrid>

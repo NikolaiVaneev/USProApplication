@@ -2,9 +2,9 @@
 
 namespace USProApplication.Views
 {
-    public partial class СustomersPage : Page
+    public partial class CustomersPage : Page
     {
-        public СustomersPage()
+        public CustomersPage()
         {
             InitializeComponent();
         }

@@ -40,7 +40,7 @@
                                  FontSize="14"/>
                     </DockPanel>
                     <DockPanel LastChildFill="True" Width="200" Margin="8 0 0 0">
-                        <TextBlock Text="Стоимость" FontSize="14"/>
+                        <TextBlock Text="Cтоимость" FontSize="14"/>
                         <TextBox HorizontalContentAlignment="Center" VerticalAlignment="Center"
                             Text="{Binding Service.Price, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, 
                             TargetNullValue='', StringFormat=N2}"
@@ -49,14 +49,14 @@
                     </DockPanel>
                 </StackPanel>
                 <TextBox DockPanel.Dock="Bottom" TabIndex="2" Height="100" Margin="0 14 0 0"
-                         VerticalContentAlignment="Top" FontSize="14" AcceptsReturn="True"
+                         VerticalContentAlignment="Top" FontSize="14" AcceptsReturn="True" TextWrapping="Wrap"
                          Text="{Binding Service.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          VerticalScrollBarVisibility="Auto"
                          materialDesign:HintAssist.Hint="Описание"/>
             </StackPanel>
         </materialDesign:Card>
 
-        <Button Grid.Row="2" Content="Сохранить" Margin="5" Width="175" TabIndex="4"
+        <Button Grid.Row="2" Content="Cохранить" Margin="5" Width="175" TabIndex="4"
             Command="{Binding Apply}"
             Style="{StaticResource MaterialDesignRaisedButton}" Foreground="White" />
     </Grid>

@@ -1,4 +1,5 @@
-﻿using ReactiveUI;
+﻿using MaterialDesignThemes.Wpf;
+using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
@@ -11,6 +12,7 @@ public class MainViewModel : ReactiveObject
 {
     [Reactive] public Page? CurrentView { get; private set; }
     [Reactive] public string? CurrentScreenTitle { get; private set; }
+    [Reactive] public PackIconKind? ScreenIcon { get; private set; }
     [Reactive] public MenuItemViewModel? SelectedMenuItem { get; set; }
     public ObservableCollection<MenuItemViewModel> MenuItems { get; }
     
@@ -19,9 +21,9 @@ public class MainViewModel : ReactiveObject
     {
         MenuItems =
         [
-            new() { Title = "Заказы", View = new OrdersPage() },
-            new() { Title = "Организации", View = new СustomersPage() },
-            new() { Title = "Услуги", View = new ServicesPage() }
+            new() { Title = "Заказы", View = new OrdersPage(), Icon = PackIconKind.ShoppingCart },
+            new() { Title = "Контрагенты", View = new CustomersPage(), Icon = PackIconKind.Account },
+            new() { Title = "Услуги", View = new ServicesPage(), Icon = PackIconKind.Toolbox }
         ];
 
         // Установить начальный выбранный элемент, если он есть
@@ -35,6 +37,7 @@ public class MainViewModel : ReactiveObject
             {
                 CurrentView = item!.View;
                 CurrentScreenTitle = item!.Title;
+                ScreenIcon = item!.Icon;
             });
     }
 }
@@ -43,4 +46,5 @@ public class MenuItemViewModel
 {
     public string Title { get; set; } = string.Empty;
     public Page View { get; set; } = new();
+    public PackIconKind Icon { get; set; }
 }

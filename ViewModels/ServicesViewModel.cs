@@ -32,9 +32,12 @@ public class ServicesViewModel : ReactiveObject
 
         Services =
         [
-            new Service { Id = Guid.NewGuid(), Name = "Система контроля", Abbreviation = "СКУД", Price = 500 },
-            new Service { Id = Guid.NewGuid(), Name = "Пожарная сигнализация", Abbreviation = "АПС", Price = 1000, Description = "Описание услуги 2" },
-            new Service { Id = Guid.NewGuid(), Name = "ОВиК", Abbreviation = "ОВиК", Price = 1500, Description = "Описание услуги 3" }
+            new Service { Id = Guid.NewGuid(), Name = "Cистема контроля", Abbreviation = "CКУД", Price = 500 },
+            new Service { Id = Guid.NewGuid(), Name = "Пожарная сигнализация", Abbreviation = "АПC", Price = 1000, Description = "Описание услуги 2" },
+            new Service { Id = Guid.NewGuid(), Name = "Отопление, вентиляция и кондиционирование", Abbreviation = "ОВиК", Price = 1500, Description = "Описание услуги 3" },
+            new Service { Id = Guid.NewGuid(), Name = "Видеонаблюдение", Abbreviation = "В", Price = 1200, Description = "Описание услуги 4" },
+            new Service { Id = Guid.NewGuid(), Name = "Система контроля и управления доступом", Abbreviation = "СКУД", Price = 1550 },
+
         ];
 
         FilteredServices = CollectionViewSource.GetDefaultView(Services);
