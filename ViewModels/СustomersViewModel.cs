@@ -94,7 +94,7 @@ public class CustomersViewModel : ReactiveObject
     {
         if (SelectedClient != null)
         {
-            var result = MessageBox.Show("Вы действительно хотите удалить выбранного контрагента?", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = MessageBox.Show("Вы действительно хотите удалить выбранного контрагента?\nВсе связанные с ним заказы будут удалены.", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
                 Clients?.Remove(SelectedClient);

@@ -44,8 +44,8 @@
             
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Наименование" Width="auto" Binding="{Binding Name}" />
-                <DataGridTextColumn Header="Аббревиатура" Width="130" Binding="{Binding Abbreviation}" />
-                <DataGridTextColumn Header="Cтоимость" Width="120" Binding="{Binding Price, StringFormat=C2}" />
+                <DataGridTextColumn Header="Аббревиатура" Width="auto" Binding="{Binding Abbreviation}" />
+                <DataGridTextColumn Header="Cтоимость" Width="auto" Binding="{Binding Price, StringFormat=C2}" />
                 <DataGridTextColumn Header="Описание" Width="*" Binding="{Binding Description}" />
             </DataGrid.Columns>
 
