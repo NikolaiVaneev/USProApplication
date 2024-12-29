@@ -1,6 +1,4 @@
-﻿#nullable disable
-
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace USProApplication.DataBase.Entities
@@ -9,6 +7,17 @@ namespace USProApplication.DataBase.Entities
     public class Service : BaseEntity
     {
         [Comment("Наименование")]
+        required
         public string Name { get; set; }
+
+        [Comment("Аббревиатура")]
+        required
+        public string Abbreviation { get; set; } 
+
+        [Comment("Cтоимость")]
+        public decimal Price { get; set; }
+
+        [Comment("Описание")]
+        public string? Description { get; set; }
     }
 }
