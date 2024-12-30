@@ -1,65 +1,54 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using System.Threading;
-using USProApplication.DataBase.Entities;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using USProApplication.Models;
 
 namespace USProApplication.DataBase.Repository;
 
-using Service = Entities.Service;
-
-public class ServicesRepository(IDbContextFactory<AppDbContext> contextFactory) : IBaseRepository<Service>
+public class ServicesRepository(IDbContextFactory<AppDbContext> contextFactory, IMapper mapper) : IBaseRepository<Models.Service>
 {
-    public async Task AddAsync(Service entity)
-    {
-        using var _context = await contextFactory.CreateDbContextAsync();
+    private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
 
-        entity.Id = Guid.NewGuid();
-        _context.Services.Add(entity);
-        await _context.SaveChangesAsync();
+    public async Task<List<Models.Service>> GetAllAsync()
+    {
+        await using var context = _contextFactory.CreateDbContext();
+
+        var serivices = await context.Services.ToListAsync();
+
+        return mapper.Map<List<Models.Service>>(serivices);
+    }
+
+    public async Task AddAsync(Service service)
+    {
+        await using var context = _contextFactory.CreateDbContext();
+
+        var entity = mapper.Map<Entities.Service>(service);
+        await context.Services.AddAsync(entity);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task UpdateAsync(Models.Service service)
+    {
+        await using var context = _contextFactory.CreateDbContext();
+
+        var entity = mapper.Map<Entities.Service>(service);
+        context.Services.Update(entity);
+        await context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        using var _context = await contextFactory.CreateDbContextAsync();
-
-        var service = await _context.Services.FindAsync(id);
-        if (service != null)
+        await using var context = _contextFactory.CreateDbContext();
+        var entity = await context.Services.FindAsync(id);
+        if (entity != null)
         {
-            _context.Services.Remove(service);
-            await _context.SaveChangesAsync();
-        }
-        else
-        {
-            throw new KeyNotFoundException($"Entity with ID {id} not found.");
+            context.Services.Remove(entity);
+            await context.SaveChangesAsync();
         }
     }
 
-    public async Task<List<Service>> GetAllAsync()
+    public async Task<Models.Service?> GetByIdAsync(Guid id)
     {
-        using var _context = await contextFactory.CreateDbContextAsync();
-        return await _context.Services.ToListAsync();
-    }
-
-    public async Task<Service?> GetByIdAsync(Guid id)
-    {
-        using var _context = await contextFactory.CreateDbContextAsync();
-        return await _context.Services.FirstOrDefaultAsync(s => s.Id == id);
-    }
-
-    public async Task UpdateAsync(Service entity)
-    {
-        using var _context = await contextFactory.CreateDbContextAsync();
-
-        var existingService = await _context.Services.FindAsync(entity.Id);
-        if (existingService != null)
-        {
-            _context.Entry(existingService).CurrentValues.SetValues(entity);
-            await _context.SaveChangesAsync();
-        }
-        else
-        {
-            throw new KeyNotFoundException($"Entity with ID {entity.Id} not found.");
-        }
+        await using var context = _contextFactory.CreateDbContext();
+        throw new NotImplementedException();
     }
 }

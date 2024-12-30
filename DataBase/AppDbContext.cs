@@ -3,7 +3,7 @@ using USProApplication.DataBase.Entities;
 
 namespace USProApplication.DataBase
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
     {
         public DbSet<Service> Services { get; set; } 
 

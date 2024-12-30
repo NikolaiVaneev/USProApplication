@@ -17,38 +17,56 @@ public class ServicesViewModel : ReactiveObject
     [Reactive] public ObservableCollection<Service>? Services { get; set; }
     [Reactive] public Service? SelectedService { get; set; }
     [Reactive] public string Filter { get; set; } = string.Empty;
-
+    [Reactive] public bool IsLoading { get; set; }
     public ICollectionView FilteredServices { get; }
 
     public ICommand AddCommand { get; }
     public ICommand EditCommand { get; }
     public ICommand DeleteCommand { get; }
 
-    public ServicesViewModel()
+    private readonly IBaseRepository<Service> _repo;
+
+    public ServicesViewModel(IBaseRepository<Service> repository)
     {
+        _repo = repository;
+        // Инициализация коллекции услуг из базы данных
+        LoadServicesAsync();
+
         var filterApplier = this.WhenAnyValue(x => x.Filter)
             .Throttle(TimeSpan.FromMilliseconds(300))
             .Subscribe(_ => FilterServices());
 
-        Services =
-        [
-            new Service { Id = Guid.NewGuid(), Name = "Cистема контроля", Abbreviation = "CКУД", Price = 500 },
-            new Service { Id = Guid.NewGuid(), Name = "Пожарная сигнализация", Abbreviation = "АПC", Price = 1000, Description = "Описание услуги 2" },
-            new Service { Id = Guid.NewGuid(), Name = "Отопление, вентиляция и кондиционирование", Abbreviation = "ОВиК", Price = 1500, Description = "Описание услуги 3" },
-            new Service { Id = Guid.NewGuid(), Name = "Видеонаблюдение", Abbreviation = "В", Price = 1200, Description = "Описание услуги 4" },
-            new Service { Id = Guid.NewGuid(), Name = "Система контроля и управления доступом", Abbreviation = "СКУД", Price = 1550 },
-
-        ];
-
         FilteredServices = CollectionViewSource.GetDefaultView(Services);
         FilteredServices.Filter = ServiceFilter;
 
-        AddCommand = new DelegateCommand(AddService);
-        EditCommand = new DelegateCommand(EditService, CanEditOrDelete);
-        DeleteCommand = new DelegateCommand(DeleteService, CanEditOrDelete);
+        AddCommand = new AsyncCommand(AddServiceAsync);
+        EditCommand = new AsyncCommand(EditServiceAsync, CanEditOrDelete);
+        DeleteCommand = new AsyncCommand(DeleteServiceAsync, CanEditOrDelete);
     }
 
     private void FilterServices() => Application.Current.Dispatcher.Invoke(() => FilteredServices.Refresh());
+
+    private async void LoadServicesAsync()
+    {
+        IsLoading = true;
+        try
+        {
+            var services = await _repo.GetAllAsync();
+            Services = new ObservableCollection<Service>(services);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+        
+    }
+
+    private Task RefreshServicesAsync()
+    {
+        // Вызываем LoadServicesAsync как Task
+        LoadServicesAsync();
+        return Task.CompletedTask;
+    }
 
     private bool ServiceFilter(object obj)
     {
@@ -61,21 +79,23 @@ public class ServicesViewModel : ReactiveObject
             || (service.Description?.Contains(Filter, StringComparison.OrdinalIgnoreCase) ?? false);
     }
 
-    private void AddService()
+    private async Task AddServiceAsync()
     {
         ServiceDialog dialog = new();
-        
+
         if (!dialog.ShowDialog(new Service(), out Service? result))
             return;
 
         if (result != null)
         {
             result.Id = Guid.NewGuid();
-            Services?.Add(result);
+            await _repo.AddAsync(result);
+
+            await RefreshServicesAsync();
         }
     }
 
-    private void EditService()
+    private async Task EditServiceAsync()
     {
         if (SelectedService != null)
         {
@@ -86,22 +106,22 @@ public class ServicesViewModel : ReactiveObject
 
             if (result != null)
             {
-               var currentService =  Services?.First(x => x.Id == result.Id);
-               currentService = result;
+                await _repo.UpdateAsync(result);
+                await RefreshServicesAsync();
             }
         }
     }
 
-    private void DeleteService()
+    private async Task DeleteServiceAsync()
     {
         if (SelectedService != null)
         {
-            var result = MessageBox.Show("Вы действительно хотите удалить выбранную услугу?", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = MessageBox.Show("Вы действительно хотите удалить выбранную услугу?", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
-                Services?.Remove(SelectedService);
+                await _repo.DeleteAsync(SelectedService.Id!.Value); 
+                await RefreshServicesAsync();                      
             }
-
         }
     }
 

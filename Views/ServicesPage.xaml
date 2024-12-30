@@ -11,18 +11,19 @@
       xmlns:utils="clr-namespace:USProApplication.Utils"
       Title="ServicesPage">
 
-    <Page.DataContext>
-        <vm:ServicesViewModel/>
-    </Page.DataContext>
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <DockPanel Grid.Row="0" LastChildFill="True">
+        <DockPanel Grid.Row="0" LastChildFill="True" Margin="0 0 0 8">
             <Button Content="{materialDesign:PackIcon Plus}" DockPanel.Dock="Right"
                     Command="{Binding AddCommand}"
                     ToolTip="Добавить новую запись" Width="35" Margin="8 0 0 0" Padding="0"/>
@@ -32,7 +33,10 @@
             
         </DockPanel>
 
-        <DataGrid Grid.Row="1" Margin="0 8 0 0"
+        <ProgressBar Grid.Row="1" IsIndeterminate="True"
+             Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        
+        <DataGrid Grid.Row="2" 
                   AutoGenerateColumns="False"
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
@@ -71,7 +75,7 @@
             </DataGrid.ContextMenu>
         </DataGrid>
 
-        <TextBlock Grid.Row="2" 
+        <TextBlock Grid.Row="3" 
            Text="{Binding FilteredServices.Count, StringFormat=Всего записей: {0}}" />
     </Grid>
 </Page>

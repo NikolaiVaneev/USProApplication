@@ -11,7 +11,7 @@ public static class DatabaseChecker
 
         if (!File.Exists(databasePath))
         {
-            CreateDatabase(databasePath);
+           // CreateDatabase(databasePath);
         }
     }
 
@@ -34,9 +34,9 @@ public static class DatabaseChecker
         return endIndex == -1 ? connectionString[startIndex..] : connectionString[startIndex..endIndex];
     }
 
-    private static void CreateDatabase(string databasePath)
-    {
-        using var context = new AppDbContext();
-        context.Database.EnsureCreated();
-    }
+    //private static void CreateDatabase(string databasePath)
+    //{
+    //    using var context = new AppDbContext();
+    //    context.Database.EnsureCreated();
+    //}
 }

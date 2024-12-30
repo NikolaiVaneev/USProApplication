@@ -1,6 +1,6 @@
 ﻿namespace USProApplication.Models
 {
-    interface IBaseRepository<T>
+    public interface IBaseRepository<T>
     {
         Task<List<T>> GetAllAsync();
         Task<T?> GetByIdAsync(Guid id);
