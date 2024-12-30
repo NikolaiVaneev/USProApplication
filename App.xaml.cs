@@ -24,6 +24,7 @@ public partial class App : Application
 
     private static void ConfigureServices(IServiceCollection services)
     {
+        // Регистрация фабрики контекста
         services.AddDbContextFactory<AppDbContext>(options =>
         {
             options.UseSqlite(AppConfiguration.GetConnectionString("DefaultConnection"));
@@ -32,11 +33,9 @@ public partial class App : Application
         // Регистрация AutoMapper
         services.AddAutoMapper(typeof(ServiceMap));
 
+        // Регистрация зависимостей
         services.AddScoped<IBaseRepository<Service>, ServicesRepository>();
         services.AddScoped<ServicesViewModel>();
-        services.AddDbContext<AppDbContext>();
-        
-        // Добавляйте другие зависимости здесь
     }
 
     protected override void OnStartup(StartupEventArgs e)
@@ -52,7 +51,10 @@ public partial class App : Application
 
         try
         {
-            DatabaseChecker.EnsureDatabaseExists();
+            // Проверка и создание базы данных
+            using var scope = ServiceProvider?.CreateScope();
+            var context = scope?.ServiceProvider.GetRequiredService<AppDbContext>();
+            context?.Database.Migrate(); // Создание базы и применение миграций
         }
         catch (Exception ex)
         {

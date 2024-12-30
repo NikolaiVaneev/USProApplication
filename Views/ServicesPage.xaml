@@ -41,7 +41,7 @@
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
                   IsReadOnly="True"
-                  ItemsSource="{Binding Services}"
+                  ItemsSource="{Binding FilteredServices}"
                   SelectedItem="{Binding SelectedService}"
                   SelectionMode="Single"
                   utils:DataGridDoubleClickBehavior.Command="{Binding EditCommand}">

@@ -1,10 +1,8 @@
 ﻿using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Reactive.Linq;
 using System.Windows;
-using System.Windows.Data;
 using System.Windows.Input;
 using USProApplication.Models;
 using USProApplication.Utils;
@@ -14,11 +12,11 @@ namespace USProApplication.ViewModels;
 
 public class ServicesViewModel : ReactiveObject
 {
-    [Reactive] public ObservableCollection<Service>? Services { get; set; }
+    [Reactive] public ObservableCollection<Service> Services { get; set; } = [];
+    [Reactive] public ObservableCollection<Service> FilteredServices { get; set; } = [];
     [Reactive] public Service? SelectedService { get; set; }
     [Reactive] public string Filter { get; set; } = string.Empty;
     [Reactive] public bool IsLoading { get; set; }
-    public ICollectionView FilteredServices { get; }
 
     public ICommand AddCommand { get; }
     public ICommand EditCommand { get; }
@@ -29,22 +27,18 @@ public class ServicesViewModel : ReactiveObject
     public ServicesViewModel(IBaseRepository<Service> repository)
     {
         _repo = repository;
-        // Инициализация коллекции услуг из базы данных
+
         LoadServicesAsync();
 
-        var filterApplier = this.WhenAnyValue(x => x.Filter)
+        // Подписка на изменения фильтра
+        this.WhenAnyValue(x => x.Filter)
             .Throttle(TimeSpan.FromMilliseconds(300))
-            .Subscribe(_ => FilterServices());
-
-        FilteredServices = CollectionViewSource.GetDefaultView(Services);
-        FilteredServices.Filter = ServiceFilter;
+            .Subscribe(_ => ApplyFilter());
 
         AddCommand = new AsyncCommand(AddServiceAsync);
         EditCommand = new AsyncCommand(EditServiceAsync, CanEditOrDelete);
         DeleteCommand = new AsyncCommand(DeleteServiceAsync, CanEditOrDelete);
     }
-
-    private void FilterServices() => Application.Current.Dispatcher.Invoke(() => FilteredServices.Refresh());
 
     private async void LoadServicesAsync()
     {
@@ -53,30 +47,29 @@ public class ServicesViewModel : ReactiveObject
         {
             var services = await _repo.GetAllAsync();
             Services = new ObservableCollection<Service>(services);
+
+            // Применяем фильтр после загрузки данных
+            ApplyFilter();
         }
         finally
         {
             IsLoading = false;
         }
-        
     }
 
-    private Task RefreshServicesAsync()
+    private void ApplyFilter()
     {
-        // Вызываем LoadServicesAsync как Task
-        LoadServicesAsync();
-        return Task.CompletedTask;
-    }
+        // Применяем фильтр к полной коллекции и обновляем FilteredServices
+        var filtered = string.IsNullOrWhiteSpace(Filter)
+            ? Services
+            : new ObservableCollection<Service>(
+                Services.Where(service =>
+                    service.Name.Contains(Filter, StringComparison.OrdinalIgnoreCase) ||
+                    service.Abbreviation.Contains(Filter, StringComparison.OrdinalIgnoreCase) ||
+                    (service.Description?.Contains(Filter, StringComparison.OrdinalIgnoreCase) ?? false))
+              );
 
-    private bool ServiceFilter(object obj)
-    {
-        if (obj is not Service service) return false;
-
-        if (string.IsNullOrWhiteSpace(Filter)) return true;
-
-        return service.Name.Contains(Filter, StringComparison.OrdinalIgnoreCase)
-            || service.Abbreviation.Contains(Filter, StringComparison.OrdinalIgnoreCase)
-            || (service.Description?.Contains(Filter, StringComparison.OrdinalIgnoreCase) ?? false);
+        FilteredServices = filtered;
     }
 
     private async Task AddServiceAsync()
@@ -91,7 +84,9 @@ public class ServicesViewModel : ReactiveObject
             result.Id = Guid.NewGuid();
             await _repo.AddAsync(result);
 
-            await RefreshServicesAsync();
+            // Обновляем полную коллекцию и фильтруем
+            Services.Add(result);
+            ApplyFilter();
         }
     }
 
@@ -107,7 +102,15 @@ public class ServicesViewModel : ReactiveObject
             if (result != null)
             {
                 await _repo.UpdateAsync(result);
-                await RefreshServicesAsync();
+
+                // Обновляем запись в полной коллекции и фильтруем
+                var index = Services.IndexOf(SelectedService);
+                if (index >= 0)
+                {
+                    Services[index] = result;
+                }
+
+                ApplyFilter();
             }
         }
     }
@@ -119,8 +122,11 @@ public class ServicesViewModel : ReactiveObject
             var result = MessageBox.Show("Вы действительно хотите удалить выбранную услугу?", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
-                await _repo.DeleteAsync(SelectedService.Id!.Value); 
-                await RefreshServicesAsync();                      
+                await _repo.DeleteAsync(SelectedService.Id!.Value);
+
+                // Удаляем из полной коллекции и фильтруем
+                Services.Remove(SelectedService);
+                ApplyFilter();
             }
         }
     }

@@ -4,10 +4,8 @@ using USProApplication.Models;
 
 namespace USProApplication.DataBase.Repository;
 
-public class ServicesRepository(IDbContextFactory<AppDbContext> contextFactory, IMapper mapper) : IBaseRepository<Models.Service>
+public class ServicesRepository(IDbContextFactory<AppDbContext> _contextFactory, IMapper mapper) : IBaseRepository<Models.Service>
 {
-    private readonly IDbContextFactory<AppDbContext> _contextFactory = contextFactory;
-
     public async Task<List<Models.Service>> GetAllAsync()
     {
         await using var context = _contextFactory.CreateDbContext();
@@ -17,7 +15,7 @@ public class ServicesRepository(IDbContextFactory<AppDbContext> contextFactory, 
         return mapper.Map<List<Models.Service>>(serivices);
     }
 
-    public async Task AddAsync(Service service)
+    public async Task AddAsync(Models.Service service)
     {
         await using var context = _contextFactory.CreateDbContext();
 

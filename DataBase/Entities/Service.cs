@@ -15,6 +15,7 @@ namespace USProApplication.DataBase.Entities
         public string Abbreviation { get; set; } 
 
         [Comment("Cтоимость")]
+        [Precision(18, 2)]
         public decimal Price { get; set; }
 
         [Comment("Описание")]

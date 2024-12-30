@@ -5,12 +5,6 @@ namespace USProApplication.DataBase
 {
     public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
     {
-        public DbSet<Service> Services { get; set; } 
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            var connectionString = AppConfiguration.GetConnectionString("DefaultConnection");
-            optionsBuilder.UseSqlite(connectionString);
-        }
+        public DbSet<Service> Services { get; set; }
     }
 }
