@@ -4,18 +4,23 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:USProApplication.Views.Modals"
+        xmlns:converters="clr-namespace:USProApplication.Converters"
         mc:Ignorable="d"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         WindowStyle="ThreeDBorderWindow"
         xmlns:vm="clr-namespace:USProApplication.ViewModels.Modals"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Title="Информация о контрагенте" SizeToContent="Height" Width="600">
 
-    <Window.DataContext>
-        <vm:ServiceDialogViewModel/>
-    </Window.DataContext>
+    <Window.Resources>
+        <converters:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
+    </Window.Resources>
 
+    <Window.DataContext>
+        <vm:CounterpartyDialogViewModel/>
+    </Window.DataContext>
+   
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -32,54 +37,79 @@
                                VerticalAlignment="Center"/>
                 </DockPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 4 0 0">
-                    <DockPanel LastChildFill="True" Width="175">
+                    <DockPanel LastChildFill="True" Width="170">
                         <TextBlock Text="ИНН" FontSize="14"/>
                         <TextBox VerticalAlignment="Center" Margin="6 0 0 0"
                                  PreviewTextInput="TextBox_PreviewTextInput"
                                  MaxLength="10"
                                  HorizontalContentAlignment="Center"
-                                 Text="{Binding Service.Abbreviation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Text="{Binding Counterparty.INN, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  FontSize="14"/>
                     </DockPanel>
                     <Button Style="{StaticResource MaterialDesignFloatingActionButton}" 
-                            Height="22" Width="22" Margin="5 0" materialDesign:ElevationAssist.Elevation="Dp1"
-                            Command="{Binding FindСounterpartyInfo}"
-                        ToolTip="Поиск данных контрагента по ИНН">
+                            Height="18" Width="18" Margin="5 0" materialDesign:ElevationAssist.Elevation="Dp1"
+                            Command="{Binding FindСounterpartyInfoAsync}"
+                            ToolTip="Поиск данных контрагента по ИНН"
+                            materialDesign:ButtonProgressAssist.IndicatorBackground="LightBlue"
+                            materialDesign:ButtonProgressAssist.IndicatorForeground="#FF1175C5"
+                            materialDesign:ButtonProgressAssist.IsIndeterminate="True"
+                            materialDesign:ButtonProgressAssist.IsIndicatorVisible="{Binding IsCounterpartyInfoLoad}"
+                            materialDesign:ButtonProgressAssist.Value="-1">
                         <materialDesign:PackIcon Kind="SearchWeb" Foreground="White"/>
                     </Button>
 
-                    <DockPanel LastChildFill="True" Width="180" Margin="5 0">
+                    <DockPanel LastChildFill="True" Width="181" Margin="5 0">
                         <TextBlock Text="ОГРН" FontSize="14"/>
                         <TextBox VerticalAlignment="Center" Margin="6 0 0 0"
                                  MaxLength="13" PreviewTextInput="TextBox_PreviewTextInput"
                             HorizontalContentAlignment="Center"
-                            Text="{Binding Service.Abbreviation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            Text="{Binding Counterparty.OGRN, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                             FontSize="14"/>
                     </DockPanel>
-                    <DockPanel LastChildFill="True" Width="165" Margin="8 0 0 0">
+                    <DockPanel LastChildFill="True" Width="150" Margin="8 0 0 0">
                         <TextBlock Text="КПП" FontSize="14"/>
                         <TextBox HorizontalContentAlignment="Center" VerticalAlignment="Center"
                                  MaxLength="9" PreviewTextInput="TextBox_PreviewTextInput"
-                            Text="{Binding Service.Price, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            Text="{Binding Counterparty.KPP, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                             Margin="6 0 0 0" FontSize="14"/>
                     </DockPanel>
                 </StackPanel>
                 <DockPanel LastChildFill="True" Margin="0 4 0 0">
                     <TextBlock Text="Наименование" FontSize="14"/>
                     <TextBox VerticalAlignment="Center" Margin="6 0 0 0"
-                             Text="{Binding Service.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Text="{Binding Counterparty.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              FontSize="14"/>
                 </DockPanel>
                 <DockPanel LastChildFill="True" Margin="0 4 0 0">
                     <TextBlock Text="Юридический адрес" FontSize="14"/>
                     <TextBox VerticalAlignment="Center" Margin="6 0 0 0"
-                             Text="{Binding Service.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Text="{Binding Counterparty.Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              FontSize="14"/>
+                </DockPanel>
+                <DockPanel LastChildFill="True" Margin="0 4 0 0">
+                    <TextBlock Text="Должность" FontSize="14" VerticalAlignment="Bottom"/>
+                    <ComboBox Width="170" Margin="5 0 10 0"  Height="25" Padding="5 0 3 0" Style="{StaticResource MaterialDesignComboBox}"
+                              VerticalContentAlignment="Bottom"
+                              ItemsSource="{Binding DirectorPositionDescriptions}"
+                              SelectedItem="{Binding Counterparty.DirectorPosition, Converter={StaticResource EnumDescriptionConverter}}">
+                        <ComboBox.ItemContainerStyle>
+                            <Style BasedOn="{StaticResource MaterialDesignComboBoxItemStyle}" TargetType="{x:Type ComboBoxItem}">
+                                <Setter Property="Padding" Value="5 2"/>
+                                <Setter Property="FontSize" Value="18"/>
+                            </Style>
+                        </ComboBox.ItemContainerStyle>
+                    </ComboBox>
+                    <DockPanel LastChildFill="True">
+                        <TextBlock Text="ФИО" FontSize="14" VerticalAlignment="Bottom"/>
+                        <TextBox VerticalAlignment="Bottom" Margin="6 0 0 0"
+                             Text="{Binding Counterparty.Director, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             FontSize="14"/>
+                    </DockPanel>
                 </DockPanel>
             </StackPanel>
         </materialDesign:Card>
 
-        <materialDesign:Card Padding="10" Margin="7 0 7 7" Grid.Row="1">
+        <materialDesign:Card Padding="10" Margin="7 0" Grid.Row="1">
             <StackPanel>
                 <DockPanel Margin="0 4 0 0">
                     <materialDesign:PackIcon Kind="Bank" VerticalAlignment="Center" Height="23" Width="23"/>
@@ -88,45 +118,53 @@
                 </DockPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0 4 0 0">
-                    <DockPanel LastChildFill="True" Width="180">
+                    <DockPanel LastChildFill="True" Width="185">
                         <TextBlock Text="БИК" FontSize="14"/>
                         <TextBox VerticalAlignment="Center" Margin="6 0 0 0"
                                  PreviewTextInput="TextBox_PreviewTextInput"
                                  MaxLength="9"
                                  HorizontalContentAlignment="Center"
-                                 Text="{Binding Service.Abbreviation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Text="{Binding Counterparty.BIK, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  FontSize="14"/>
                     </DockPanel>
                     <Button Style="{StaticResource MaterialDesignFloatingActionButton}" 
-                            Height="22" Width="22" Margin="5 0" materialDesign:ElevationAssist.Elevation="Dp1"
-                            Command="{Binding FindBankInfo}"
-                        ToolTip="Поиск данных банка по БИК">
+                            Height="18" Width="18" Margin="5 0 10 0" materialDesign:ElevationAssist.Elevation="Dp1"
+                            Command="{Binding FindBankInfoAsync}"
+                            ToolTip="Поиск данных банка по БИК"
+                            materialDesign:ButtonProgressAssist.IndicatorBackground="LightBlue"
+                            materialDesign:ButtonProgressAssist.IndicatorForeground="#FF1175C5"
+                            materialDesign:ButtonProgressAssist.IsIndeterminate="True"
+                            materialDesign:ButtonProgressAssist.IsIndicatorVisible="{Binding IsBankInfoLoad}"
+                            materialDesign:ButtonProgressAssist.Value="-1">
                         <materialDesign:PackIcon Kind="SearchWeb" Foreground="White"/>
+                        
                     </Button>
-                    <DockPanel LastChildFill="True" Width="355">
+                    <DockPanel LastChildFill="True" Width="350">
                         <TextBlock Text="Корр. счет (к/с)" FontSize="14"/>
                         <TextBox VerticalAlignment="Center" Margin="6 0 0 0"
                                  PreviewTextInput="TextBox_PreviewTextInput"
                             HorizontalContentAlignment="Center" MaxLength="20"
-                            Text="{Binding Service.Abbreviation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            Text="{Binding Counterparty.CorrAccount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                             FontSize="14"/>
                     </DockPanel>
                 </StackPanel>
                 <DockPanel LastChildFill="True" Margin="0 4 0 0">
                     <TextBlock Text="Наименование и адрес" FontSize="14"/>
                     <TextBox VerticalAlignment="Center" Margin="6 0 0 0"
-                             Text="{Binding Service.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Text="{Binding Counterparty.Bank, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              FontSize="14"/>
                 </DockPanel>
                 <DockPanel LastChildFill="True" Margin="0 4 0 0">
                     <TextBlock Text="Расчетный счет (р/с)" FontSize="14"/>
                     <TextBox VerticalAlignment="Center" Margin="6 0 0 0"
-                             Text="{Binding Service.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             PreviewTextInput="TextBox_PreviewTextInput"
+                             Text="{Binding Counterparty.PaymentAccount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              FontSize="14"/>
                 </DockPanel>
             </StackPanel>
         </materialDesign:Card>
         <CheckBox Grid.Row="2" Padding="5 0" FontSize="16" Content="Является исполнителем" Margin="5 0" 
+                  IsChecked="{Binding Counterparty.Executor, UpdateSourceTrigger=PropertyChanged}"
                   VerticalContentAlignment="Center" Style="{StaticResource MaterialDesignCheckBox}"/>
         <Button Grid.Row="3" Content="Cохранить" Margin="5" Width="175" TabIndex="4"
             Command="{Binding Apply}"

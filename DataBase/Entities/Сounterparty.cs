@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -54,10 +55,15 @@ namespace USProApplication.DataBase.Entities
 
     public enum DirectorPositions
     {
+        [Description("")]
         None,
+        [Description("Директор")]
         Director,
+        [Description("Генеральный директор")]
         GeneralDirector,
+        [Description("Управляющий")]
         Manager,
+        [Description("Начальник")]
         Chief
     }
 }

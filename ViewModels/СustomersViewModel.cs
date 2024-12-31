@@ -6,8 +6,10 @@ using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
+using USProApplication.DataBase.Entities;
 using USProApplication.Models;
 using USProApplication.Utils;
+using USProApplication.Views.Modals;
 
 namespace USProApplication.ViewModels;
 
@@ -41,7 +43,7 @@ public class CustomersViewModel : ReactiveObject
         FilteredClients = CollectionViewSource.GetDefaultView(Clients);
         FilteredClients.Filter = ClientsFilter;
 
-        AddCommand = new DelegateCommand(AddService);
+        AddCommand = new DelegateCommand(AddCounterparty);
         EditCommand = new DelegateCommand(EditService, CanEditOrDelete);
         DeleteCommand = new DelegateCommand(DeleteService, CanEditOrDelete);
     }
@@ -59,18 +61,22 @@ public class CustomersViewModel : ReactiveObject
             || (service.ChiefFullName?.Contains(Filter, StringComparison.OrdinalIgnoreCase) ?? false);
     }
 
-    private void AddService()
+    private void AddCounterparty()
     {
-        //ServiceDialog dialog = new();
+        СounterpartyDialog dialog = new();
 
-        //if (!dialog.ShowDialog(new Service(), out Service? result))
-        //    return;
+        if (!dialog.ShowDialog(new CounterpartyDTO(), out CounterpartyDTO? result))
+            return;
 
-        //if (result != null)
-        //{
-        //    result.Id = Guid.NewGuid();
-        //    Clients?.Add(result);
-        //}
+        if (result != null)
+        {
+            result.Id = Guid.NewGuid();
+            //await _repo.AddAsync(result);
+
+            //// Обновляем полную коллекцию и фильтруем
+            //Services.Add(result);
+            //ApplyFilter();
+        }
     }
 
     private void EditService()
