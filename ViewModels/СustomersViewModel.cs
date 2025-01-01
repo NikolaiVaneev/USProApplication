@@ -1,12 +1,9 @@
 ﻿using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Reactive.Linq;
 using System.Windows;
-using System.Windows.Data;
 using System.Windows.Input;
-using USProApplication.DataBase.Entities;
 using USProApplication.Models;
 using USProApplication.Utils;
 using USProApplication.Views.Modals;
@@ -15,40 +12,53 @@ namespace USProApplication.ViewModels;
 
 public class CustomersViewModel : ReactiveObject
 {
-    [Reactive] public ObservableCollection<ClientShortInfo>? Clients { get; set; }
+    [Reactive] public ObservableCollection<ClientShortInfo>? Clients { get; set; } = [];
+    [Reactive] public ObservableCollection<ClientShortInfo>? FilteredClients { get; set; } = [];
     [Reactive] public ClientShortInfo? SelectedClient { get; set; }
     [Reactive] public string Filter { get; set; } = string.Empty;
-
-    public ICollectionView FilteredClients { get; }
+    [Reactive] public bool IsLoading { get; set; }
 
     public ICommand AddCommand { get; }
     public ICommand EditCommand { get; }
     public ICommand DeleteCommand { get; }
 
-    public CustomersViewModel()
+    private readonly ICounterpartyRepository _repo;
+
+    public CustomersViewModel(ICounterpartyRepository repository)
     {
+        _repo = repository;
+
+        LoadClientsAsync();
+
         var filterApplier = this.WhenAnyValue(x => x.Filter)
             .Throttle(TimeSpan.FromMilliseconds(300))
             .Subscribe(_ => FilterClients());
 
-        Clients =
-        [
-            new ClientShortInfo { Id = Guid.NewGuid(), Name = "ООО Компания 1", ChiefFullName = "Иванов Иван Иванович", Address = "г. Москва, ул. Ленина, д. 1", CreatedOn = DateTime.Now, ContractDate = DateTime.Now},
-            new ClientShortInfo { Id = Guid.NewGuid(), Name = "ООО Компания 2", ChiefFullName = "Петров Петр Петрович", Address = "г. Москва, ул. Ленина, д. 2", CreatedOn = DateTime.Now},
-            new ClientShortInfo { Id = Guid.NewGuid(), Name = "ООО Компания 3", ChiefFullName = "Сидоров Сидор Сидорович", Address = "г. Москва, ул. Ленина, д. 3", CreatedOn = DateTime.Now, ContractDate = DateTime.Now},
-            new ClientShortInfo { Id = Guid.NewGuid(), Name = "ООО Компания 4", ChiefFullName = "Федоров Федор Федорович", Address = "г. Москва, ул. Ленина, д. 4", CreatedOn = DateTime.Now},
-            new ClientShortInfo { Id = Guid.NewGuid(), Name = "ООО Компания 5", ChiefFullName = "Михайлов Михаил Михайлович", Address = "г. Москва, ул. Ленина, д. 5", CreatedOn = DateTime.Now}
-        ];
-
-        FilteredClients = CollectionViewSource.GetDefaultView(Clients);
-        FilteredClients.Filter = ClientsFilter;
-
         AddCommand = new DelegateCommand(AddCounterparty);
-        EditCommand = new DelegateCommand(EditService, CanEditOrDelete);
-        DeleteCommand = new DelegateCommand(DeleteService, CanEditOrDelete);
+        EditCommand = new DelegateCommand(EditCounterparty, CanEditOrDelete);
+        DeleteCommand = new DelegateCommand(DeleteCounterparty, CanEditOrDelete);
     }
 
-    private void FilterClients() => Application.Current.Dispatcher.Invoke(() => FilteredClients.Refresh());
+    private async void LoadClientsAsync()
+    {
+        IsLoading = true;
+        try
+        {
+            var clients = await _repo.GetCounterpartiesShortInfos();
+            Clients = new ObservableCollection<ClientShortInfo>(clients);
+
+            // Применяем фильтр после загрузки данных
+            //ApplyFilter();
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void FilterClients() => Application.Current.Dispatcher.Invoke(() => {
+    
+    });
 
     private bool ClientsFilter(object obj)
     {
@@ -79,7 +89,7 @@ public class CustomersViewModel : ReactiveObject
         }
     }
 
-    private void EditService()
+    private void EditCounterparty()
     {
         //if (SelectedService != null)
         //{
@@ -96,7 +106,7 @@ public class CustomersViewModel : ReactiveObject
         //}
     }
 
-    private void DeleteService()
+    private void DeleteCounterparty()
     {
         if (SelectedClient != null)
         {

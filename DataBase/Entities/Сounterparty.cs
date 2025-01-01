@@ -51,6 +51,9 @@ namespace USProApplication.DataBase.Entities
 
         [Comment("Является исполнителем")]
         public bool Executor { get; set; }
+
+        [Comment("Дата создания")]
+        public DateTime CreatedOn { get; set; }
     }
 
     public enum DirectorPositions

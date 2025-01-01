@@ -32,10 +32,13 @@ public partial class App : Application
 
         // Регистрация AutoMapper
         services.AddAutoMapper(typeof(ServiceMap));
+        services.AddAutoMapper(typeof(CounterpartyMap));
 
         // Регистрация зависимостей
         services.AddScoped<IBaseRepository<Service>, ServicesRepository>();
+        services.AddScoped<ICounterpartyRepository, CounterpartyRepository>();
         services.AddScoped<ServicesViewModel>();
+        services.AddScoped<CustomersViewModel>();
     }
 
     protected override void OnStartup(StartupEventArgs e)
