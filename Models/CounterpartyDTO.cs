@@ -68,4 +68,9 @@ public class CounterpartyDTO
     /// Является исполнителем
     /// </summary>
     public bool Executor { get; set; }
+
+    /// <summary>
+    /// Дата создания
+    /// </summary>
+    public DateTime CreatedOn { get; set; }
 }

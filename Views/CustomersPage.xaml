@@ -42,9 +42,20 @@
                 <DataGridTextColumn Header="Наименование" Width="auto" Binding="{Binding Name}" />
                 <DataGridTextColumn Header="Руководитель" Width="auto" Binding="{Binding ChiefFullName}" />
                 <DataGridTextColumn Header="Адрес" Width="*" Binding="{Binding Address}" />
-                <DataGridTextColumn Header="Исполнтель" Width="110" Binding="{Binding IsExecutor}" />
-                <DataGridTextColumn Header="Дата добавления" Width="140" Binding="{Binding CreatedOn, StringFormat='dd.MM.yyyy'}" />
-                <DataGridTextColumn Header="Дата договора" Width="140" Binding="{Binding ContractDate, StringFormat='dd.MM.yyyy'}" />
+                <DataGridTextColumn Header="Исполнитель" Width="115">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextAlignment" Value="Center" />
+                            <Setter Property="Text" Value=""/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=IsExecutor, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                                    <Setter Property="Text" Value="✓" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <!--<DataGridTextColumn Header="Дата договора" Width="140" Binding="{Binding ContractDate, StringFormat='dd.MM.yyyy'}" />-->
             </DataGrid.Columns>
 
             <DataGrid.ContextMenu>

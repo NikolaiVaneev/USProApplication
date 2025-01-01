@@ -1,9 +1,11 @@
-﻿using ReactiveUI;
+﻿using AutoMapper;
+using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Input;
+using USProApplication.DataBase.Entities;
 using USProApplication.Models;
 using USProApplication.Utils;
 using USProApplication.Views.Modals;
@@ -12,8 +14,8 @@ namespace USProApplication.ViewModels;
 
 public class CustomersViewModel : ReactiveObject
 {
-    [Reactive] public ObservableCollection<ClientShortInfo>? Clients { get; set; } = [];
-    [Reactive] public ObservableCollection<ClientShortInfo>? FilteredClients { get; set; } = [];
+    [Reactive] public ObservableCollection<ClientShortInfo> Clients { get; set; } = [];
+    [Reactive] public ObservableCollection<ClientShortInfo> FilteredClients { get; set; } = [];
     [Reactive] public ClientShortInfo? SelectedClient { get; set; }
     [Reactive] public string Filter { get; set; } = string.Empty;
     [Reactive] public bool IsLoading { get; set; }
@@ -23,9 +25,10 @@ public class CustomersViewModel : ReactiveObject
     public ICommand DeleteCommand { get; }
 
     private readonly ICounterpartyRepository _repo;
-
-    public CustomersViewModel(ICounterpartyRepository repository)
+    private readonly IMapper _mapper;
+    public CustomersViewModel(IMapper mapper, ICounterpartyRepository repository)
     {
+        _mapper = mapper;
         _repo = repository;
 
         LoadClientsAsync();
@@ -34,9 +37,9 @@ public class CustomersViewModel : ReactiveObject
             .Throttle(TimeSpan.FromMilliseconds(300))
             .Subscribe(_ => FilterClients());
 
-        AddCommand = new DelegateCommand(AddCounterparty);
-        EditCommand = new DelegateCommand(EditCounterparty, CanEditOrDelete);
-        DeleteCommand = new DelegateCommand(DeleteCounterparty, CanEditOrDelete);
+        AddCommand = new AsyncCommand(AddCounterparty);
+        EditCommand = new AsyncCommand(EditCounterparty, CanEditOrDelete);
+        DeleteCommand = new AsyncCommand(DeleteCounterparty, CanEditOrDelete);
     }
 
     private async void LoadClientsAsync()
@@ -48,7 +51,7 @@ public class CustomersViewModel : ReactiveObject
             Clients = new ObservableCollection<ClientShortInfo>(clients);
 
             // Применяем фильтр после загрузки данных
-            //ApplyFilter();
+            ApplyFilter();
         }
         finally
         {
@@ -60,18 +63,22 @@ public class CustomersViewModel : ReactiveObject
     
     });
 
-    private bool ClientsFilter(object obj)
+    private void ApplyFilter()
     {
-        if (obj is not ClientShortInfo service) return false;
+        // Применяем фильтр к полной коллекции и обновляем FilteredServices
+        var filtered = string.IsNullOrWhiteSpace(Filter)
+            ? Clients
+        : new ObservableCollection<ClientShortInfo>(
+                Clients.Where(service =>
+                    service.Name.Contains(Filter, StringComparison.OrdinalIgnoreCase) ||
+                    service.Address.Contains(Filter, StringComparison.OrdinalIgnoreCase) ||
+                    (service.ChiefFullName?.Contains(Filter, StringComparison.OrdinalIgnoreCase) ?? false))
+              );
 
-        if (string.IsNullOrWhiteSpace(Filter)) return true;
-
-        return service.Name.Contains(Filter, StringComparison.OrdinalIgnoreCase)
-            || service.Address.Contains(Filter, StringComparison.OrdinalIgnoreCase)
-            || (service.ChiefFullName?.Contains(Filter, StringComparison.OrdinalIgnoreCase) ?? false);
+        FilteredClients = filtered;
     }
 
-    private void AddCounterparty()
+    private async Task AddCounterparty()
     {
         СounterpartyDialog dialog = new();
 
@@ -81,38 +88,52 @@ public class CustomersViewModel : ReactiveObject
         if (result != null)
         {
             result.Id = Guid.NewGuid();
-            //await _repo.AddAsync(result);
+            result.CreatedOn = DateTime.Now;
 
-            //// Обновляем полную коллекцию и фильтруем
-            //Services.Add(result);
-            //ApplyFilter();
+            await _repo.AddAsync(result);
+
+            Clients.Add(_mapper.Map<ClientShortInfo>(result));
+            ApplyFilter();
         }
     }
 
-    private void EditCounterparty()
+    private async Task EditCounterparty()
     {
-        //if (SelectedService != null)
-        //{
-        //    ServiceDialog dialog = new();
+        if (SelectedClient != null)
+        {
+            СounterpartyDialog dialog = new();
 
-        //    if (!dialog.ShowDialog(SelectedService.Clone(), out Service? result))
-        //        return;
+            var counterparty = await _repo.GetByIdAsync(SelectedClient.Id);
+            if (counterparty != null)
+            {
+                if (!dialog.ShowDialog(counterparty, out CounterpartyDTO? result))
+                    return;
 
-        //    if (result != null)
-        //    {
-        //        var currentService = Services?.First(x => x.Id == result.Id);
-        //        currentService = result;
-        //    }
-        //}
+                if (result != null)
+                {
+                    await _repo.UpdateAsync(result);
+
+                    // Обновляем запись в полной коллекции и фильтруем
+                    var index = Clients.IndexOf(SelectedClient);
+                    if (index >= 0)
+                    {
+                        Clients[index] = _mapper.Map<ClientShortInfo>(result);
+                    }
+
+                    ApplyFilter();
+                }
+            }
+        }
     }
 
-    private void DeleteCounterparty()
+    private async Task DeleteCounterparty()
     {
         if (SelectedClient != null)
         {
             var result = MessageBox.Show("Вы действительно хотите удалить выбранного контрагента?\nВсе связанные с ним заказы будут удалены.", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
+                await _repo.DeleteAsync(SelectedClient.Id);
                 Clients?.Remove(SelectedClient);
             }
 

@@ -12,10 +12,10 @@ public class ServicesRepository(IDbContextFactory<AppDbContext> _contextFactory,
 
         var serivices = await context.Services.ToListAsync();
 
-        return mapper.Map<List<Models.Service>>(serivices);
+        return mapper.Map<List<Service>>(serivices);
     }
 
-    public async Task AddAsync(Models.Service service)
+    public async Task AddAsync(Service service)
     {
         await using var context = _contextFactory.CreateDbContext();
 
@@ -24,7 +24,7 @@ public class ServicesRepository(IDbContextFactory<AppDbContext> _contextFactory,
         await context.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(Models.Service service)
+    public async Task UpdateAsync(Service service)
     {
         await using var context = _contextFactory.CreateDbContext();
 
@@ -44,7 +44,7 @@ public class ServicesRepository(IDbContextFactory<AppDbContext> _contextFactory,
         }
     }
 
-    public async Task<Models.Service?> GetByIdAsync(Guid id)
+    public async Task<Service?> GetByIdAsync(Guid id)
     {
         await using var context = _contextFactory.CreateDbContext();
         throw new NotImplementedException();

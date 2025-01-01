@@ -7,7 +7,7 @@ namespace USProApplication.DataBase.Entities
 {
     [Comment("Контрагенты")]
     [Table("Сounterparties")]
-    public class Сounterparty : BaseEntity
+    public class Counterparty : BaseEntity
     {
         [Comment("Наименование")]
         required

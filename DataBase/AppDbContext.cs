@@ -6,6 +6,6 @@ namespace USProApplication.DataBase
     public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
     {
         public DbSet<Service> Services { get; set; }
-        public DbSet<Сounterparty> Сounterparties { get; set; }
+        public DbSet<Counterparty> Counterparties { get; set; }
     }
 }

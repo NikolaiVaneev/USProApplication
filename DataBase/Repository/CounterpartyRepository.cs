@@ -1,18 +1,30 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using USProApplication.DataBase.Entities;
 using USProApplication.Models;
 
 namespace USProApplication.DataBase.Repository;
 
-public class CounterpartyRepository(IMapper mapper) : ICounterpartyRepository
+public class CounterpartyRepository(IDbContextFactory<AppDbContext> _contextFactory, IMapper mapper) : ICounterpartyRepository
 {
-    public Task AddAsync(CounterpartyDTO entity)
+    public async Task AddAsync(CounterpartyDTO counterparty)
     {
-        throw new NotImplementedException();
+        await using var context = _contextFactory.CreateDbContext();
+    
+        var entity = mapper.Map<Counterparty>(counterparty);
+        await context.Counterparties.AddAsync(entity);
+        await context.SaveChangesAsync();
     }
 
-    public Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id)
     {
-        throw new NotImplementedException();
+        await using var context = _contextFactory.CreateDbContext();
+        var entity = await context.Counterparties.FindAsync(id);
+        if (entity != null)
+        {
+            context.Counterparties.Remove(entity);
+            await context.SaveChangesAsync();
+        }
     }
 
     public Task<List<CounterpartyDTO>> GetAllAsync()
@@ -20,18 +32,28 @@ public class CounterpartyRepository(IMapper mapper) : ICounterpartyRepository
         throw new NotImplementedException();
     }
 
-    public Task<CounterpartyDTO?> GetByIdAsync(Guid id)
+    public async Task<CounterpartyDTO?> GetByIdAsync(Guid id)
     {
-        throw new NotImplementedException();
+        await using var context = _contextFactory.CreateDbContext();
+
+        var entity = await context.Counterparties.FindAsync(id);
+        return mapper.Map<CounterpartyDTO>(entity);
     }
 
     public async Task<ICollection<ClientShortInfo>> GetCounterpartiesShortInfos()
     {
-        throw new NotImplementedException();
+        await using var context = _contextFactory.CreateDbContext();
+
+        var counterparties = await context.Counterparties.ToListAsync();
+        return mapper.Map<List<ClientShortInfo>>(counterparties);
     }
 
-    public Task UpdateAsync(CounterpartyDTO entity)
+    public async Task UpdateAsync(CounterpartyDTO counterparty)
     {
-        throw new NotImplementedException();
+        await using var context = _contextFactory.CreateDbContext();
+
+        var entity = mapper.Map<Counterparty>(counterparty);
+        context.Counterparties.Update(entity);
+        await context.SaveChangesAsync();
     }
 }
