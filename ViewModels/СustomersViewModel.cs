@@ -5,7 +5,6 @@ using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Input;
-using USProApplication.DataBase.Entities;
 using USProApplication.Models;
 using USProApplication.Utils;
 using USProApplication.Views.Modals;
@@ -35,7 +34,7 @@ public class CustomersViewModel : ReactiveObject
 
         var filterApplier = this.WhenAnyValue(x => x.Filter)
             .Throttle(TimeSpan.FromMilliseconds(300))
-            .Subscribe(_ => FilterClients());
+            .Subscribe(_ => ApplyFilter());
 
         AddCommand = new AsyncCommand(AddCounterparty);
         EditCommand = new AsyncCommand(EditCounterparty, CanEditOrDelete);
@@ -58,10 +57,6 @@ public class CustomersViewModel : ReactiveObject
             IsLoading = false;
         }
     }
-
-    private void FilterClients() => Application.Current.Dispatcher.Invoke(() => {
-    
-    });
 
     private void ApplyFilter()
     {
@@ -135,6 +130,7 @@ public class CustomersViewModel : ReactiveObject
             {
                 await _repo.DeleteAsync(SelectedClient.Id);
                 Clients?.Remove(SelectedClient);
+                ApplyFilter();
             }
 
         }

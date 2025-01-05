@@ -12,7 +12,6 @@ public class CounterpartyMap : Profile
             .ForMember(e => e.Name, opts => opts.MapFrom(src => src.Name))
             .ForMember(e => e.ChiefFullName, opts => opts.MapFrom(src => src.Director))
             .ForMember(e => e.Address, opts => opts.MapFrom(src => src.Address))
-            .ForMember(e => e.CreatedOn, opts => opts.MapFrom(src => src.CreatedOn))
             //.ForMember(e => e.ContractDate, opts => opts.MapFrom(src => src.))
             .ForMember(e => e.IsExecutor, opts => opts.MapFrom(src => src.Executor))
             ;
@@ -22,7 +21,6 @@ public class CounterpartyMap : Profile
             .ForMember(e => e.Name, opts => opts.MapFrom(src => src.Name))
             .ForMember(e => e.ChiefFullName, opts => opts.MapFrom(src => src.Director))
             .ForMember(e => e.Address, opts => opts.MapFrom(src => src.Address))
-            .ForMember(e => e.CreatedOn, opts => opts.MapFrom(src => src.CreatedOn))
             //.ForMember(e => e.ContractDate, opts => opts.MapFrom(src => src.))
             .ForMember(e => e.IsExecutor, opts => opts.MapFrom(src => src.Executor));
 

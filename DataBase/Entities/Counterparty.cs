@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace USProApplication.DataBase.Entities
 {
     [Comment("Контрагенты")]
-    [Table("Сounterparties")]
+    [Table("Counterparties")]
     public class Counterparty : BaseEntity
     {
         [Comment("Наименование")]
@@ -51,9 +51,6 @@ namespace USProApplication.DataBase.Entities
 
         [Comment("Является исполнителем")]
         public bool Executor { get; set; }
-
-        [Comment("Дата создания")]
-        public DateTime CreatedOn { get; set; }
     }
 
     public enum DirectorPositions

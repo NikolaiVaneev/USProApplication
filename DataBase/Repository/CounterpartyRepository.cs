@@ -35,7 +35,6 @@ public class CounterpartyRepository(IDbContextFactory<AppDbContext> _contextFact
     public async Task<CounterpartyDTO?> GetByIdAsync(Guid id)
     {
         await using var context = _contextFactory.CreateDbContext();
-
         var entity = await context.Counterparties.FindAsync(id);
         return mapper.Map<CounterpartyDTO>(entity);
     }

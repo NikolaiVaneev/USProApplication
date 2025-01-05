@@ -17,38 +17,7 @@ namespace USProApplication.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
 
-            modelBuilder.Entity("USProApplication.DataBase.Entities.Service", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT")
-                        .HasComment("Уникальный идентификатор записи.");
-
-                    b.Property<string>("Abbreviation")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasComment("Аббревиатура");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("TEXT")
-                        .HasComment("Описание");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasComment("Наименование");
-
-                    b.Property<decimal>("Price")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("TEXT")
-                        .HasComment("Cтоимость");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Services");
-                });
-
-            modelBuilder.Entity("USProApplication.DataBase.Entities.Сounterparty", b =>
+            modelBuilder.Entity("USProApplication.DataBase.Entities.Counterparty", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -72,10 +41,6 @@ namespace USProApplication.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("TEXT")
                         .HasComment("Корреспондентский счет");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("TEXT")
-                        .HasComment("Дата создания");
 
                     b.Property<string>("Director")
                         .HasColumnType("TEXT")
@@ -115,10 +80,41 @@ namespace USProApplication.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Сounterparties", t =>
+                    b.ToTable("Counterparties", t =>
                         {
                             t.HasComment("Контрагенты");
                         });
+                });
+
+            modelBuilder.Entity("USProApplication.DataBase.Entities.Service", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasComment("Уникальный идентификатор записи.");
+
+                    b.Property<string>("Abbreviation")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasComment("Аббревиатура");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT")
+                        .HasComment("Описание");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasComment("Наименование");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT")
+                        .HasComment("Cтоимость");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Services");
                 });
 #pragma warning restore 612, 618
         }

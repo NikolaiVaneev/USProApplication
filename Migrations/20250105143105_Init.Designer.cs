@@ -11,8 +11,8 @@ using USProApplication.DataBase;
 namespace USProApplication.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20241230163710_AddСounterpartiesTable")]
-    partial class AddСounterpartiesTable
+    [Migration("20250105143105_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -20,38 +20,7 @@ namespace USProApplication.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
 
-            modelBuilder.Entity("USProApplication.DataBase.Entities.Service", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT")
-                        .HasComment("Уникальный идентификатор записи.");
-
-                    b.Property<string>("Abbreviation")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasComment("Аббревиатура");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("TEXT")
-                        .HasComment("Описание");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasComment("Наименование");
-
-                    b.Property<decimal>("Price")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("TEXT")
-                        .HasComment("Cтоимость");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Services");
-                });
-
-            modelBuilder.Entity("USProApplication.DataBase.Entities.Сounterparty", b =>
+            modelBuilder.Entity("USProApplication.DataBase.Entities.Counterparty", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -114,10 +83,41 @@ namespace USProApplication.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Сounterparties", t =>
+                    b.ToTable("Counterparties", t =>
                         {
                             t.HasComment("Контрагенты");
                         });
+                });
+
+            modelBuilder.Entity("USProApplication.DataBase.Entities.Service", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasComment("Уникальный идентификатор записи.");
+
+                    b.Property<string>("Abbreviation")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasComment("Аббревиатура");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT")
+                        .HasComment("Описание");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasComment("Наименование");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT")
+                        .HasComment("Cтоимость");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Services");
                 });
 #pragma warning restore 612, 618
         }
