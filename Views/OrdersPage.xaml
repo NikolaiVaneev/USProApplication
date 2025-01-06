@@ -5,14 +5,72 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:USProApplication.Views"
       mc:Ignorable="d" 
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      xmlns:utils="clr-namespace:USProApplication.Utils"
       xmlns:vm="clr-namespace:USProApplication.ViewModels"
       d:DesignHeight="450" d:DesignWidth="800"
       Title="OrdersPage">
 
-    <Page.DataContext>
-        <vm:OrdersViewModel />
-    </Page.DataContext>
     <Grid>
-        <TextBlock Text="OrdersPage" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="0" LastChildFill="True">
+            <Button Content="{materialDesign:PackIcon Plus}" DockPanel.Dock="Right"
+                    Command="{Binding AddCommand}"
+                    ToolTip="Добавить новую запись" Width="35" Margin="8 0 0 0" Padding="0"/>
+            <TextBox FontSize="14" 
+                     Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}" 
+                     materialDesign:HintAssist.Hint="Поиск..." />
+
+        </DockPanel>
+
+        <DataGrid Grid.Row="1" Margin="0 8 0 0"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  IsReadOnly="True"
+                  ItemsSource="{Binding FilteredClients}"
+                  SelectedItem="{Binding SelectedClient}"
+                  SelectionMode="Single"
+                  utils:DataGridDoubleClickBehavior.Command="{Binding EditCommand}">
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Наименование" Width="auto" Binding="{Binding Name}" />
+                <DataGridTextColumn Header="Адрес" Width="*" Binding="{Binding Address}" />
+                <DataGridTextColumn Header="Договор" Width="auto" Binding="{Binding Name}" />
+                <DataGridTextColumn Header="Дата договора" Width="140" Binding="{Binding ContractDate, StringFormat='dd.MM.yyyy'}"/>
+                <DataGridTextColumn Header="Счет" Width="140" Binding="{Binding ContractDate, StringFormat='dd.MM.yyyy'}"/>
+                <DataGridTextColumn Header="Статус" Width="auto" Binding="{Binding Status}" />
+                <!--<DataGridTextColumn Header="Дата договора" Width="140" Binding="{Binding ContractDate, StringFormat='dd.MM.yyyy'}" />-->
+            </DataGrid.Columns>
+
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Добавить новую запись" Command="{Binding AddCommand}">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="Plus" Width="16" Height="16" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Header="Редактировать" Command="{Binding EditCommand}" IsEnabled="{Binding SelectedClient, Converter={StaticResource NullToBooleanConverter}}">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="Pencil" Width="16" Height="16" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Удалить" Command="{Binding DeleteCommand}" IsEnabled="{Binding SelectedClient, Converter={StaticResource NullToBooleanConverter}}">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="Delete" Width="16" Height="16" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+        </DataGrid>
+
+        <TextBlock Grid.Row="2" 
+           Text="{Binding FilteredClients.Count, StringFormat=Всего записей: {0}}" />
     </Grid>
 </Page>

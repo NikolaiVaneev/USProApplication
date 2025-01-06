@@ -20,5 +20,8 @@ namespace USProApplication.DataBase.Entities
 
         [Comment("Описание")]
         public string? Description { get; set; }
+
+        [Comment("Заказы")]
+        public virtual ICollection<Order> Orders { get; set; } = [];
     }
 }
