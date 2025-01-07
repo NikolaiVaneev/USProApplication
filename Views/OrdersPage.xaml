@@ -33,19 +33,35 @@
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
                   IsReadOnly="True"
-                  ItemsSource="{Binding FilteredClients}"
-                  SelectedItem="{Binding SelectedClient}"
+                  ItemsSource="{Binding FilteredOrders}"
+                  SelectedItem="{Binding SelectedOrder}"
                   SelectionMode="Single"
                   utils:DataGridDoubleClickBehavior.Command="{Binding EditCommand}">
 
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Наименование" Width="auto" Binding="{Binding Name}" />
                 <DataGridTextColumn Header="Адрес" Width="*" Binding="{Binding Address}" />
-                <DataGridTextColumn Header="Договор" Width="auto" Binding="{Binding Name}" />
+                <DataGridTextColumn Header="Площадь" Width="auto" Binding="{Binding Square}" />
+                <DataGridTextColumn Header="Договор" Width="auto" Binding="{Binding ContractNo}" />
                 <DataGridTextColumn Header="Дата договора" Width="140" Binding="{Binding ContractDate, StringFormat='dd.MM.yyyy'}"/>
-                <DataGridTextColumn Header="Счет" Width="140" Binding="{Binding ContractDate, StringFormat='dd.MM.yyyy'}"/>
-                <DataGridTextColumn Header="Статус" Width="auto" Binding="{Binding Status}" />
-                <!--<DataGridTextColumn Header="Дата договора" Width="140" Binding="{Binding ContractDate, StringFormat='dd.MM.yyyy'}" />-->
+                <DataGridTextColumn Header="Счет" Width="140" Binding="{Binding AccountNo}"/>
+                <DataGridTextColumn Header="Статус" Width="auto" Binding="{Binding Status}">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Status}" Value="Выполнен">
+                                    <Setter Property="Foreground" Value="Green" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Status}" Value="Просрочен">
+                                    <Setter Property="Foreground" Value="Red" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Status}" Value="В работе">
+                                    <Setter Property="Foreground" Value="#FF178DBF" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
             </DataGrid.Columns>
 
             <DataGrid.ContextMenu>
@@ -71,6 +87,6 @@
         </DataGrid>
 
         <TextBlock Grid.Row="2" 
-           Text="{Binding FilteredClients.Count, StringFormat=Всего записей: {0}}" />
+           Text="{Binding FilteredOrders.Count, StringFormat=Всего записей: {0}}" />
     </Grid>
 </Page>

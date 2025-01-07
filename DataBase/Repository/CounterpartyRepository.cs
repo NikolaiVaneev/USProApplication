@@ -47,6 +47,11 @@ public class CounterpartyRepository(IDbContextFactory<AppDbContext> _contextFact
         return mapper.Map<List<ClientShortInfo>>(counterparties);
     }
 
+    public Task<ICollection<OrderShortInfo>> GetOrdersShortInfos()
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task UpdateAsync(CounterpartyDTO counterparty)
     {
         await using var context = _contextFactory.CreateDbContext();

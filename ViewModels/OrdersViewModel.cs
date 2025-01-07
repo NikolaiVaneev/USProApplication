@@ -12,9 +12,9 @@ namespace USProApplication.ViewModels;
 
 public class OrdersViewModel : ReactiveObject
 {
-    [Reactive] public ObservableCollection<ClientShortInfo> Сounterparties { get; set; } = [];
-    [Reactive] public ObservableCollection<ClientShortInfo> FilteredСounterparties { get; set; } = [];
-    [Reactive] public ClientShortInfo? SelectedCounterparty { get; set; }
+    [Reactive] public ObservableCollection<OrderShortInfo> Orders { get; set; } = [];
+    [Reactive] public ObservableCollection<OrderShortInfo> FilteredOrders { get; set; } = [];
+    [Reactive] public OrderShortInfo? SelectedOrder { get; set; }
     [Reactive] public string Filter { get; set; } = string.Empty;
     [Reactive] public bool IsLoading { get; set; }
 
@@ -22,79 +22,82 @@ public class OrdersViewModel : ReactiveObject
     public ICommand EditCommand { get; }
     public ICommand DeleteCommand { get; }
 
-    //private readonly IBaseRepository<CounterpartyDTO> _repo;
+    private readonly IOrdersRepository _repo;
 
-    //public OrdersViewModel(IBaseRepository<CounterpartyDTO> repository)
-    //{
-    //    _repo = repository;
+    public OrdersViewModel(IOrdersRepository repository)
+    {
+        _repo = repository;
 
-    //    LoadСounterpartiesAsync();
+        LoadOrdersAsync();
 
-    //    // Подписка на изменения фильтра
-    //    this.WhenAnyValue(x => x.Filter)
-    //        .Throttle(TimeSpan.FromMilliseconds(300))
-    //        .Subscribe(_ => ApplyFilter());
+        // Подписка на изменения фильтра
+        this.WhenAnyValue(x => x.Filter)
+            .Throttle(TimeSpan.FromMilliseconds(300))
+            .Subscribe(_ => ApplyFilter());
 
-    //    AddCommand = new AsyncCommand(AddCounterpartyAsync);
-    //    EditCommand = new AsyncCommand(EditCounterpartyAsync, CanEditOrDelete);
-    //    DeleteCommand = new AsyncCommand(DeleteCounterpartyAsync, CanEditOrDelete);
-    //}
+        AddCommand = new AsyncCommand(AddOrderAsync);
+        EditCommand = new AsyncCommand(EditOrderAsync, CanEditOrDelete);
+        DeleteCommand = new AsyncCommand(DeleteOrderAsync, CanEditOrDelete);
+    }
 
-    //private async void LoadСounterpartiesAsync()
-    //{
-    //    IsLoading = true;
-    //    try
-    //    {
-    //        var counterparties = await _repo.GetAllAsync();
-    //        Сounterparties = new ObservableCollection<ClientShortInfo>(counterparties);
+    private async void LoadOrdersAsync()
+    {
+        IsLoading = true;
+        try
+        {
+            var orders = await _repo.GetOrdersShortInfos();
+            Orders = new ObservableCollection<OrderShortInfo>(orders);
 
-    //        // Применяем фильтр после загрузки данных
-    //        ApplyFilter();
-    //    }
-    //    finally
-    //    {
-    //        IsLoading = false;
-    //    }
-    //}
+            // Применяем фильтр после загрузки данных
+            ApplyFilter();
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
 
-    //private void ApplyFilter()
-    //{
-    //    // Применяем фильтр к полной коллекции и обновляем FilteredServices
-    //    var filtered = string.IsNullOrWhiteSpace(Filter)
-    //        ? Сounterparties
-    //        : new ObservableCollection<Service>(
-    //            Сounterparties.Where(service =>
-    //                service.Name.Contains(Filter, StringComparison.OrdinalIgnoreCase) ||
-    //                service.ChiefFullName?.Contains(Filter, StringComparison.OrdinalIgnoreCase) ||
-    //                (service.Address?.Contains(Filter, StringComparison.OrdinalIgnoreCase) ?? false))
-    //          );
+    private void ApplyFilter()
+    {
+        // Применяем фильтр к полной коллекции и обновляем FilteredOrders
+        var filtered = string.IsNullOrWhiteSpace(Filter)
+            ? Orders
+            : new ObservableCollection<OrderShortInfo>(
+                Orders.Where(orders =>
+                    orders.Name.Contains(Filter, StringComparison.OrdinalIgnoreCase) ||
+                    orders.ContractNo.Contains(Filter, StringComparison.OrdinalIgnoreCase) ||
+                    (orders.Address?.Contains(Filter, StringComparison.OrdinalIgnoreCase) ?? false))
+              );
 
-    //    FilteredСounterparties = filtered;
-    //}
+        FilteredOrders = filtered;
+    }
 
-    //private async Task AddCounterpartyAsync()
-    //{
-    //    СounterpartyDialog dialog = new();
+    private async Task AddOrderAsync()
+    {
+        OrderDialog dialog = new();
 
-    //    if (!dialog.ShowDialog(new CounterpartyDTO(), out CounterpartyDTO? result))
-    //        return;
+        //   if (!dialog.ShowDialog(new CounterpartyDTO(), out CounterpartyDTO? result))
 
-    //    if (result != null)
-    //    {
-    //        result.Id = Guid.NewGuid();
-    //        await _repo.AddAsync(result);
+        dialog.ShowDialog();
+        //if ((bool)!dialog.ShowDialog())
+        //    return;
 
-    //        // Обновляем полную коллекцию и фильтруем
-    //        Сounterparties.Add(result);
-    //        ApplyFilter();
-    //    }
-    //}
+        //if (result != null)
+        //{
+        //    result.Id = Guid.NewGuid();
+        //    await _repo.AddAsync(result);
 
-    //private async Task EditCounterpartyAsync()
-    //{
-    //    if (SelectedCounterparty != null)
-    //    {
-    //        СounterpartyDialog dialog = new();
+        //    Обновляем полную коллекцию и фильтруем
+        //    Сounterparties.Add(result);
+        //    ApplyFilter();
+        //}
+    }
+
+    private async Task EditOrderAsync()
+    {
+        if (SelectedOrder != null)
+        {
+            OrderDialog dialog = new();
 
     //        if (!dialog.ShowDialog(SelectedService.Clone(), out CounterpartyDTO? result))
     //            return;
@@ -110,26 +113,26 @@ public class OrdersViewModel : ReactiveObject
     //            //    Services[index] = result;
     //            //}
 
-    //            ApplyFilter();
+                ApplyFilter();
     //        }
-    //    }
-    //}
+        }
+    }
 
-    //private async Task DeleteCounterpartyAsync()
-    //{
-    //    if (SelectedCounterparty != null)
-    //    {
-    //        var result = MessageBox.Show("Вы действительно хотите удалить выбранного контрагента?", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
-    //        if (result == MessageBoxResult.Yes)
-    //        {
-    //            await _repo.DeleteAsync(SelectedCounterparty.Id);
+    private async Task DeleteOrderAsync()
+    {
+        if (SelectedOrder != null)
+        {
+            var result = MessageBox.Show("Вы действительно хотите удалить выбранный заказ?", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+            {
+                await _repo.DeleteAsync(SelectedOrder.Id);
 
-    //            // Удаляем из полной коллекции и фильтруем
-    //            Сounterparties.Remove(SelectedCounterparty);
-    //            ApplyFilter();
-    //        }
-    //    }
-    //}
+                // Удаляем из полной коллекции и фильтруем
+                Orders.Remove(SelectedOrder);
+                ApplyFilter();
+            }
+        }
+    }
 
-    private bool CanEditOrDelete() => SelectedCounterparty != null;
+    private bool CanEditOrDelete() => SelectedOrder != null;
 }
