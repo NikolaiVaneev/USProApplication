@@ -33,6 +33,9 @@ public partial class OrderDialog : Window
         viewModel.Executors = new ObservableCollection<DictionaryItem>(executors);
         viewModel.Customers = new ObservableCollection<DictionaryItem>(clients);
         viewModel.Order = order;
+        viewModel.PriceToMeter = order.PriceToMeter ?? 0;
+        viewModel.TotalPrice = order.Price ?? 0;
+
 
         viewModel.InitializeServices(services, order.SelectedServicesIds);
 

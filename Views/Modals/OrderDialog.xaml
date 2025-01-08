@@ -149,8 +149,36 @@
                 </materialDesign:Card>
             </TabItem>
 
-            <TabItem Header="Стоиомость">
-
+            <TabItem Header="Стоимость">
+                <StackPanel>
+                    <materialDesign:Card Padding="4 4" Margin="7">
+                        <StackPanel Orientation="Horizontal">
+                            <DockPanel Width="110" HorizontalAlignment="Left" Margin="4 0 0 0">
+                                <CheckBox Content="НДС, %" IsChecked="{Binding Order.UsingNDS, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBox IsEnabled="{Binding Order.UsingNDS}" MaxLength="2" Margin="5 0 0 0" Text="{Binding Order.NDS, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 HorizontalContentAlignment="Center" FontSize="14"
+                                 PreviewTextInput="TextBox_PreviewTextInput"/>
+                            </DockPanel>
+                            <StackPanel Orientation="Horizontal" Margin="8 0 0 0">
+                                <TextBlock Text="Цена за кв.м." FontSize="14" VerticalAlignment="Bottom"/>
+                                <TextBox VerticalAlignment="Bottom" Margin="6 0 0 0" Width="85" 
+                                         HorizontalContentAlignment="Center"
+                                         Text="{Binding PriceToMeter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         FontSize="14"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="8 0 0 0">
+                                <TextBlock Text="Стоимость услуг" FontSize="14" VerticalAlignment="Bottom"/>
+                                <TextBox VerticalAlignment="Bottom" Margin="6 0 0 0" Width="100" HorizontalContentAlignment="Center"
+                                    Text="{Binding TotalPrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" FontSize="14"/>
+                            </StackPanel>
+                            <Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}" Margin="8 0 0 0"
+                                    Command="{Binding CalculatePrice}"
+                            ToolTip="Автоматический расчет" Height="25" Width="25">
+                                <materialDesign:PackIcon Kind="Calculator" Foreground="White" Width="20" Height="20"/>
+                            </Button>
+                        </StackPanel>
+                    </materialDesign:Card>
+                </StackPanel>
             </TabItem>
         </TabControl>
 

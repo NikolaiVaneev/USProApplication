@@ -28,6 +28,9 @@
 
         public string? Email { get; set; }
 
+        public bool UsingNDS { get; set; }
+        public sbyte NDS { get; set; } = 5;
+
         public Guid? ExecutorId { get; set; }
 
         public Guid? CustomerId { get; set; }
