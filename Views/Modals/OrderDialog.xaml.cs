@@ -28,20 +28,13 @@ public partial class OrderDialog : Window
 
     public bool ShowDialog(OrderDTO order, ICollection<DictionaryItem> executors, ICollection<DictionaryItem> clients, ICollection<ServiceItem> services, out OrderDTO? result)
     {
-        ((OrderDialogViewModel)DataContext).Executors = new ObservableCollection<DictionaryItem>(executors);
-        ((OrderDialogViewModel)DataContext).Customers = new ObservableCollection<DictionaryItem>(clients);
-        ((OrderDialogViewModel)DataContext).Services = new ObservableCollection<ServiceItem>(services);
-        ((OrderDialogViewModel)DataContext).Order = order;
+        var viewModel = (OrderDialogViewModel)DataContext;
 
-        var selectedService = order.SelectedServicesIds;
-        if (selectedService != null && services.Count > 0)
-        {
-            foreach (var service in ((OrderDialogViewModel)DataContext).Services)
-            {
-                if (selectedService.Contains(service.Id))
-                    service.IsChecked = true;
-            }
-        }
+        viewModel.Executors = new ObservableCollection<DictionaryItem>(executors);
+        viewModel.Customers = new ObservableCollection<DictionaryItem>(clients);
+        viewModel.Order = order;
+
+        viewModel.InitializeServices(services, order.SelectedServicesIds);
 
         result = null;
 

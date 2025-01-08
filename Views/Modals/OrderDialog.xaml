@@ -129,7 +129,7 @@
                 <TabItem.Header>
                     <Grid Width="70">
                         <TextBlock Text="Услуги" HorizontalAlignment="Center"/>
-                        <materialDesign:Badged VerticalAlignment="Center" HorizontalAlignment="Right" Badge="{Binding Order.SelectedServicesIds.Count}"/>
+                        <materialDesign:Badged VerticalAlignment="Center" HorizontalAlignment="Right" Badge="{Binding SelectedServicesCount}"/>
                     </Grid>
                 </TabItem.Header>
 
