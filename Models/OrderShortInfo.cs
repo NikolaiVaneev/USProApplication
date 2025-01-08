@@ -25,11 +25,6 @@
         public string ContractNo { get; set; } = string.Empty;
 
         /// <summary>
-        /// Номер счета
-        /// </summary>
-        public string AccountNo { get; set; } = string.Empty;
-
-        /// <summary>
         /// Дата договора
         /// </summary>
         public DateOnly? ContractDate { get; set; }

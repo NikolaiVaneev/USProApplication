@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using USProApplication.DataBase.Entities;
 using USProApplication.Models;
 using USProApplication.Models.Repositories;
 
@@ -63,9 +64,36 @@ namespace USProApplication.DataBase.Repository
             return mapper.Map<List<OrderShortInfo>>(orders);
         }
 
-        public Task UpdateAsync(OrderDTO entity)
+        public async Task UpdateAsync(OrderDTO order)
         {
-            throw new NotImplementedException();
+            await using var context = _contextFactory.CreateDbContext();
+
+            // Получить существующий заказ с его услугами из базы данных
+            var existingOrder = await context.Orders
+                .Include(o => o.Services) // Загрузка связанных данных
+                .FirstOrDefaultAsync(o => o.Id == order.Id) ?? throw new InvalidOperationException($"Order with ID {order.Id} not found.");
+
+            // Удаление существующих связей
+            existingOrder.Services.Clear();
+
+            // Добавление новых связей
+            if (order.SelectedServicesIds != null)
+            {
+                foreach (var serviceId in order.SelectedServicesIds)
+                {
+                    var service = await context.Services.FindAsync(serviceId);
+                    if (service != null)
+                    {
+                        existingOrder.Services.Add(service);
+                    }
+                }
+            }
+
+            // Обновление прочих данных заказа
+            mapper.Map(order, existingOrder);
+
+            // Сохранение изменений
+            await context.SaveChangesAsync();
         }
     }
 }

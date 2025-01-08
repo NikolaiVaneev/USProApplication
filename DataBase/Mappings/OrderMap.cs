@@ -79,8 +79,7 @@ namespace USProApplication.DataBase.Mappings
                 .ForMember(e => e.Address, opts => opts.MapFrom(src => src.Address))
                 .ForMember(e => e.Square, opts => opts.MapFrom(src => src.Square))
                 .ForMember(e => e.ContractNo, opts => opts.MapFrom(src => src.Number))
-                .ForMember(e => e.ContractDate, opts => opts.MapFrom(src => src.StartDate))
-                .ForMember(e => e.AccountNo, opts => opts.MapFrom(src => $"{src.PrepaymentBillNumber} от {src.PrepaymentBillDate}"));
+                .ForMember(e => e.ContractDate, opts => opts.MapFrom(src => src.StartDate));
 
             CreateMap<OrderDTO, OrderShortInfo>()
                 .ForMember(e => e.Id, opts => opts.MapFrom(src => src.Id))
@@ -89,8 +88,9 @@ namespace USProApplication.DataBase.Mappings
                 .ForMember(e => e.Address, opts => opts.MapFrom(src => src.Address))
                 .ForMember(e => e.Square, opts => opts.MapFrom(src => src.Square))
                 .ForMember(e => e.ContractNo, opts => opts.MapFrom(src => src.Number))
-                .ForMember(e => e.ContractDate, opts => opts.MapFrom(src => src.StartDate))
-                .ForMember(e => e.AccountNo, opts => opts.MapFrom(src => $"{src.PrepaymentBillNumber} от {src.PrepaymentBillDate}"));
+                .ForMember(e => e.ContractDate, opts => opts.MapFrom(src => src.StartDate.HasValue
+                    ? DateOnly.FromDateTime(src.StartDate.Value)
+                    : (DateOnly?)null));
         }
 
         private static string CalculateStatus(DateOnly? startDate, int? term)

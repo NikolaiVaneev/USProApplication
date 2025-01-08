@@ -112,11 +112,21 @@ public class OrdersViewModel : ReactiveObject
 
             if (order != null && dialog.ShowDialog(order, executors, clients, services, out OrderDTO? result))
             {
+
                 if (result != null)
                 {
+                    await _repo.UpdateAsync(result);
 
+                    // Обновляем запись в полной коллекции и фильтруем
+                    var index = Orders.IndexOf(SelectedOrder);
+                    if (index >= 0)
+                    {
+                        Orders[index] = _mapper.Map<OrderShortInfo>(result);
+                    }
+
+                    ApplyFilter();
                 }
-                ApplyFilter();
+
             }
         }
     }
