@@ -39,6 +39,12 @@
                 <Setter Property="FontFamily" Value="{StaticResource GilroyRegular}" />
             </Style>
 
+            <Style TargetType="DatePicker" BasedOn="{StaticResource MaterialDesignDatePicker}">
+                <Setter Property="FontFamily" Value="{StaticResource GilroyRegular}" />
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            </Style>
+            
             <ResourceDictionary.MergedDictionaries>
 
                 <materialDesign:BundledTheme BaseTheme="Light" 

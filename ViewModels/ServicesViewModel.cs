@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Input;
 using USProApplication.Models;
+using USProApplication.Models.Repositories;
 using USProApplication.Utils;
 using USProApplication.Views.Modals;
 

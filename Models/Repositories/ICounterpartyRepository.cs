@@ -1,4 +1,4 @@
-﻿namespace USProApplication.Models
+﻿namespace USProApplication.Models.Repositories
 {
     public interface ICounterpartyRepository : IBaseRepository<CounterpartyDTO>
     {

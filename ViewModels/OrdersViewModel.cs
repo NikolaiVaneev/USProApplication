@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Input;
 using USProApplication.Models;
+using USProApplication.Models.Repositories;
 using USProApplication.Utils;
 using USProApplication.Views.Modals;
 
@@ -23,10 +24,12 @@ public class OrdersViewModel : ReactiveObject
     public ICommand DeleteCommand { get; }
 
     private readonly IOrdersRepository _repo;
+    private readonly IDirectoryRepository _directoryRepository;
 
-    public OrdersViewModel(IOrdersRepository repository)
+    public OrdersViewModel(IOrdersRepository repository, IDirectoryRepository directoryRepository)
     {
         _repo = repository;
+        _directoryRepository = directoryRepository;
 
         LoadOrdersAsync();
 
@@ -74,23 +77,24 @@ public class OrdersViewModel : ReactiveObject
 
     private async Task AddOrderAsync()
     {
+        var executors = await _directoryRepository.GetCounterpartiesAsync(true);
+        var clients = await _directoryRepository.GetCounterpartiesAsync(false);
+        var services = await _directoryRepository.GetServicesAsync();
         OrderDialog dialog = new();
 
-        //   if (!dialog.ShowDialog(new CounterpartyDTO(), out CounterpartyDTO? result))
 
-        dialog.ShowDialog();
-        //if ((bool)!dialog.ShowDialog())
-        //    return;
+        if (dialog.ShowDialog(new OrderDTO(), executors, clients, services, out OrderDTO? result))
+        {
+            //if (result != null)
+            //{
+            //    result.Id = Guid.NewGuid();
+            //    await _repo.AddAsync(result);
 
-        //if (result != null)
-        //{
-        //    result.Id = Guid.NewGuid();
-        //    await _repo.AddAsync(result);
-
-        //    Обновляем полную коллекцию и фильтруем
-        //    Сounterparties.Add(result);
-        //    ApplyFilter();
-        //}
+            //    Обновляем полную коллекцию и фильтруем
+            //    Сounterparties.Add(result);
+            //    ApplyFilter();
+            //}
+        }
     }
 
     private async Task EditOrderAsync()

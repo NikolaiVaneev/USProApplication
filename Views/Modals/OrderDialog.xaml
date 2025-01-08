@@ -21,19 +21,32 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <DockPanel Margin="7 7 7 0">
-            <CheckBox Content="Завершен" Width="100" DockPanel.Dock="Right"/>
-            <TextBlock Text="Номер" FontSize="14"/>
-            <TextBox HorizontalContentAlignment="Center" FontSize="14" Margin="5 0 120 0" />
-        </DockPanel>
+        <StackPanel>
+            <DockPanel Margin="7 7 7 0">
+                <CheckBox Content="Завершен" Width="100" DockPanel.Dock="Right" IsChecked="{Binding Order.IsCompleted, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock Text="Номер" FontSize="14" />
+                <TextBox HorizontalContentAlignment="Center" FontSize="14" Margin="5 0 120 0" Text="{Binding Order.Number, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            </DockPanel>
+            <DockPanel Margin="7 7 7 0">
+                <TextBlock Text="Дата начала" FontSize="14"/>
+                <DatePicker Width="100" Margin="8 0 0 0" SelectedDate="{Binding Order.StartDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock Text="Срок" FontSize="14" Margin="8 0 0 0"/>
+                <TextBox HorizontalContentAlignment="Center" FontSize="14" Width="80" Margin="8 0"
+                         PreviewTextInput="TextBox_PreviewTextInput"
+                         Text="{Binding Order.Term, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock Text="Дата завершения" FontSize="14"/>
+                <DatePicker IsEnabled="{Binding Order.IsCompleted}" Margin="8 0 0 0" 
+                            SelectedDate="{Binding Order.СompletionDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            </DockPanel>
+        </StackPanel>
+        
 
         <TabControl Grid.Row="1" Margin="0 5 0 0">
             <TabItem Header="Общие сведения">
                 <StackPanel>
-                    <materialDesign:Card Padding="10" Margin="7" Grid.Row="1">
+                    <materialDesign:Card Padding="10 6" Margin="7">
                         <StackPanel>
                             <DockPanel Margin="0 4 0 0">
                                 <materialDesign:PackIcon Kind="MapMarkerRadius" VerticalAlignment="Center" Height="23" Width="23"/>
@@ -44,22 +57,69 @@
                             <DockPanel LastChildFill="True" Margin="0 4 0 0">
                                 <TextBlock Text="Наименование" FontSize="14"/>
                                 <TextBox VerticalAlignment="Center" Margin="6 0 0 0"
-                                    Text="{Binding Counterparty.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Text="{Binding Order.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     FontSize="14"/>
                             </DockPanel>
                             <DockPanel LastChildFill="True" Margin="0 4 0 0">
                                 <TextBlock Text="Адрес" FontSize="14"/>
                                 <TextBox VerticalAlignment="Center" Margin="6 0 0 0"
-                                    Text="{Binding Counterparty.Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Text="{Binding Order.Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     FontSize="14"/>
                             </DockPanel>
                             <StackPanel Orientation="Horizontal" Margin="0 4 0 0">
                                 <TextBlock Text="Площадь (кв.м.)" FontSize="14" VerticalAlignment="Bottom"/>
                                 <TextBox VerticalAlignment="Bottom" Margin="6 0 0 0" Width="100" 
+                                         PreviewTextInput="TextBox_PreviewTextInput"
                                          HorizontalContentAlignment="Center"
-                                         Text="{Binding Counterparty.Director, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Text="{Binding Order.Square, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          FontSize="14"/>
                             </StackPanel>
+                        </StackPanel>
+                    </materialDesign:Card>
+                    
+                    <materialDesign:Card Padding="10 6" Margin="7 0 7 7">
+                        <StackPanel>
+                            <DockPanel Margin="0 4 0 0">
+                                <materialDesign:PackIcon Kind="AccountMultiple" VerticalAlignment="Center" Height="23" Width="23"/>
+                                <TextBlock Margin="5 0" Text="Контрагенты" FontFamily="Roboto" FontSize="16" Padding="0" FontWeight="SemiBold"
+                                VerticalAlignment="Center"/>
+                            </DockPanel>
+                            <DockPanel LastChildFill="True" Margin="0 4 0 0">
+                                <TextBlock Text="Исполнитель" FontSize="14" VerticalAlignment="Bottom"/>
+                                <ComboBox Margin="6 0 0 0" FontSize="14" FontFamily="{StaticResource GilroyRegular}"
+                                    IsEditable="True" ItemsSource="{Binding Executors}"
+                                    DisplayMemberPath="Name"
+                                    SelectedValuePath="Id"
+                                    SelectedValue="{Binding Order.ExecutorId, UpdateSourceTrigger=PropertyChanged}">
+                                </ComboBox>
+                            </DockPanel>
+                            <DockPanel LastChildFill="True" Margin="0 4 0 0">
+                                <TextBlock Text="Заказчик" FontSize="14" VerticalAlignment="Bottom"/>
+                                <ComboBox Margin="6 0 0 0" FontSize="14" FontFamily="{StaticResource GilroyRegular}"
+                                    IsEditable="True" ItemsSource="{Binding Customers}"
+                                    DisplayMemberPath="Name"
+                                    SelectedValuePath="Id"
+                                    SelectedValue="{Binding Order.CustomerId, UpdateSourceTrigger=PropertyChanged}">
+                                </ComboBox>
+                            </DockPanel>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+
+                                <DockPanel Grid.Column="0">
+                                    <materialDesign:PackIcon Kind="EmailOutline" VerticalAlignment="Center"/>
+                                    <TextBox Margin="6 0 0 0" FontSize="14" Text="{Binding Order.Email, UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+
+                                <DockPanel Grid.Column="2">
+                                    <materialDesign:PackIcon Kind="Phone" VerticalAlignment="Center"/>
+                                    <TextBox Margin="6 0 0 0" FontSize="14" Text="{Binding Order.Phone, UpdateSourceTrigger=PropertyChanged}"/>
+                                </DockPanel>
+                            </Grid>
                         </StackPanel>
                     </materialDesign:Card>
                 </StackPanel>
@@ -67,7 +127,26 @@
 
             <TabItem Header="Услуги и стоимость">
 
+                <materialDesign:Card Padding="10 6" Margin="7">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Height="300">
+                        <ItemsControl ItemsSource="{Binding Services}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel LastChildFill="False">
+                                        <CheckBox DockPanel.Dock="Left" IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding Name}" VerticalContentAlignment="Center" />
+                                        <TextBlock DockPanel.Dock="Right" FontSize="13" Text="{Binding Price, StringFormat=C}" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </materialDesign:Card>
+            
             </TabItem>
         </TabControl>
+
+        <Button Grid.Row="2" Content="Cохранить" Margin="5" Width="175" TabIndex="4"
+            Command="{Binding Apply}"
+            Style="{StaticResource MaterialDesignRaisedButton}" Foreground="White" />
     </Grid>
 </Window>

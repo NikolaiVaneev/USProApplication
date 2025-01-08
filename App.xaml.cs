@@ -7,6 +7,7 @@ using USProApplication.DataBase;
 using USProApplication.DataBase.Mappings;
 using USProApplication.DataBase.Repository;
 using USProApplication.Models;
+using USProApplication.Models.Repositories;
 using USProApplication.ViewModels;
 
 namespace USProApplication;
@@ -39,6 +40,8 @@ public partial class App : Application
         services.AddScoped<IBaseRepository<Service>, ServicesRepository>();
         services.AddScoped<ICounterpartyRepository, CounterpartyRepository>();
         services.AddScoped<IOrdersRepository, OrdersRepository>();
+        services.AddScoped<IDirectoryRepository, DirectoryRepository>();
+
         services.AddScoped<ServicesViewModel>();
         services.AddScoped<CustomersViewModel>();
         services.AddScoped<OrdersViewModel>();

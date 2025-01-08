@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using USProApplication.DataBase.Entities;
 using USProApplication.Models;
+using USProApplication.Models.Repositories;
 
 namespace USProApplication.DataBase.Repository;
 

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using USProApplication.Models;
+using USProApplication.Models.Repositories;
 
 namespace USProApplication.DataBase.Repository
 {
