@@ -20,7 +20,7 @@
 
         public decimal? PriceToMeter { get; set; }
 
-        public int? Square { get; set; }
+        public int Square { get; set; } = 0;
 
         public bool IsCompleted { get; set; }
 
@@ -31,5 +31,7 @@
         public Guid? ExecutorId { get; set; }
 
         public Guid? CustomerId { get; set; }
+
+        public ICollection<Guid>? SelectedServicesIds { get; set; }
     }
 }

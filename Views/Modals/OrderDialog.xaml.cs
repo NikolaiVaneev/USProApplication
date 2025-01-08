@@ -1,10 +1,7 @@
-﻿using System.CodeDom.Compiler;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
-using USProApplication.DataBase.Entities;
-using USProApplication.DataBase.Repository;
 using USProApplication.Models;
 using USProApplication.ViewModels.Modals;
 
@@ -31,10 +28,20 @@ public partial class OrderDialog : Window
 
     public bool ShowDialog(OrderDTO order, ICollection<DictionaryItem> executors, ICollection<DictionaryItem> clients, ICollection<ServiceItem> services, out OrderDTO? result)
     {
-        ((OrderDialogViewModel)DataContext).Order = order;
         ((OrderDialogViewModel)DataContext).Executors = new ObservableCollection<DictionaryItem>(executors);
         ((OrderDialogViewModel)DataContext).Customers = new ObservableCollection<DictionaryItem>(clients);
         ((OrderDialogViewModel)DataContext).Services = new ObservableCollection<ServiceItem>(services);
+        ((OrderDialogViewModel)DataContext).Order = order;
+
+        var selectedService = order.SelectedServicesIds;
+        if (selectedService != null && services.Count > 0)
+        {
+            foreach (var service in ((OrderDialogViewModel)DataContext).Services)
+            {
+                if (selectedService.Contains(service.Id))
+                    service.IsChecked = true;
+            }
+        }
 
         result = null;
 

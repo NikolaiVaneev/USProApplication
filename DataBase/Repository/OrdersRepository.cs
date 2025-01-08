@@ -22,9 +22,14 @@ namespace USProApplication.DataBase.Repository
             throw new NotImplementedException();
         }
 
-        public Task<OrderDTO?> GetByIdAsync(Guid id)
+        public async Task<OrderDTO?> GetByIdAsync(Guid id)
         {
-            throw new NotImplementedException();
+            await using var context = _contextFactory.CreateDbContext();
+            var entity = await context.Orders
+                .Include(x => x.Services)
+                .Where(x => x.Id == id).FirstOrDefaultAsync();
+
+            return mapper.Map<OrderDTO>(entity);
         }
 
         public async Task<ICollection<OrderShortInfo>> GetOrdersShortInfos()

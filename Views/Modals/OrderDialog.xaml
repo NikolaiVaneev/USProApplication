@@ -41,7 +41,7 @@
                             SelectedDate="{Binding Order.СompletionDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
             </DockPanel>
         </StackPanel>
-        
+
 
         <TabControl Grid.Row="1" Margin="0 5 0 0">
             <TabItem Header="Общие сведения">
@@ -76,7 +76,7 @@
                             </StackPanel>
                         </StackPanel>
                     </materialDesign:Card>
-                    
+
                     <materialDesign:Card Padding="10 6" Margin="7 0 7 7">
                         <StackPanel>
                             <DockPanel Margin="0 4 0 0">
@@ -125,10 +125,16 @@
                 </StackPanel>
             </TabItem>
 
-            <TabItem Header="Услуги и стоимость">
+            <TabItem>
+                <TabItem.Header>
+                    <Grid Width="70">
+                        <TextBlock Text="Услуги" HorizontalAlignment="Center"/>
+                        <materialDesign:Badged VerticalAlignment="Center" HorizontalAlignment="Right" Badge="{Binding Order.SelectedServicesIds.Count}"/>
+                    </Grid>
+                </TabItem.Header>
 
                 <materialDesign:Card Padding="10 6" Margin="7">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Height="300">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Height="248">
                         <ItemsControl ItemsSource="{Binding Services}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -141,7 +147,10 @@
                         </ItemsControl>
                     </ScrollViewer>
                 </materialDesign:Card>
-            
+            </TabItem>
+
+            <TabItem Header="Стоиомость">
+
             </TabItem>
         </TabControl>
 

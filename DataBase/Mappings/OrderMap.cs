@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using USProApplication.DataBase.Entities;
 using USProApplication.Models;
 
 namespace USProApplication.DataBase.Mappings
@@ -7,7 +8,49 @@ namespace USProApplication.DataBase.Mappings
     {
         public OrderMap()
         {
-            CreateMap<Entities.Order, OrderShortInfo>()
+            CreateMap<Order, OrderDTO>()
+                .ForMember(e => e.Id, opts => opts.MapFrom(src => src.Id))
+                .ForMember(e => e.Name, opts => opts.MapFrom(src => src.Name))
+                .ForMember(e => e.Number, opts => opts.MapFrom(src => src.Number))
+                .ForMember(e => e.Address, opts => opts.MapFrom(src => src.Address))
+                .ForMember(e => e.Square, opts => opts.MapFrom(src => src.Square))
+                .ForMember(e => e.CustomerId, opts => opts.MapFrom(src => src.CustomerId))
+                .ForMember(e => e.Phone, opts => opts.MapFrom(src => src.Phone))
+                .ForMember(e => e.Email, opts => opts.MapFrom(src => src.Email))
+                .ForMember(e => e.ExecutorId, opts => opts.MapFrom(src => src.ExecutorId))
+                .ForMember(e => e.IsCompleted, opts => opts.MapFrom(src => src.IsCompleted))
+                .ForMember(e => e.StartDate, opts => opts.MapFrom(src => src.StartDate.HasValue
+                    ? src.StartDate.Value.ToDateTime(TimeOnly.MinValue)
+                    : (DateTime?)null))
+                .ForMember(e => e.СompletionDate, opts => opts.MapFrom(src => src.СompletionDate.HasValue
+                    ? src.СompletionDate.Value.ToDateTime(TimeOnly.MinValue)
+                    : (DateTime?)null))
+                .ForMember(e => e.Price, opts => opts.MapFrom(src => src.Price))
+                .ForMember(e => e.PriceToMeter, opts => opts.MapFrom(src => src.PriceToMeter))
+                .ForMember(e => e.SelectedServicesIds, opts => opts.MapFrom(src => src.Services.Select(s => s.Id)));
+
+            CreateMap<OrderDTO, Order>()
+                .ForMember(e => e.Id, opts => opts.MapFrom(src => src.Id))
+                .ForMember(e => e.Name, opts => opts.MapFrom(src => src.Name))
+                .ForMember(e => e.Number, opts => opts.MapFrom(src => src.Number))
+                .ForMember(e => e.Address, opts => opts.MapFrom(src => src.Address))
+                .ForMember(e => e.Square, opts => opts.MapFrom(src => src.Square))
+                .ForMember(e => e.CustomerId, opts => opts.MapFrom(src => src.CustomerId))
+                .ForMember(e => e.Phone, opts => opts.MapFrom(src => src.Phone))
+                .ForMember(e => e.Email, opts => opts.MapFrom(src => src.Email))
+                .ForMember(e => e.ExecutorId, opts => opts.MapFrom(src => src.ExecutorId))
+                .ForMember(e => e.IsCompleted, opts => opts.MapFrom(src => src.IsCompleted))
+                .ForMember(e => e.StartDate, opts => opts.MapFrom(src => src.StartDate.HasValue
+                    ? DateOnly.FromDateTime(src.StartDate.Value)
+                    : (DateOnly?)null))
+                .ForMember(e => e.СompletionDate, opts => opts.MapFrom(src => src.СompletionDate.HasValue
+                    ? DateOnly.FromDateTime(src.СompletionDate.Value)
+                    : (DateOnly?)null))
+                .ForMember(e => e.Price, opts => opts.MapFrom(src => src.Price))
+                .ForMember(e => e.PriceToMeter, opts => opts.MapFrom(src => src.PriceToMeter))
+                .ForMember(e => e.Services, opts => opts.Ignore()); // Нужно обработать отдельно
+
+            CreateMap<Order, OrderShortInfo>()
                 .ForMember(e => e.Id, opts => opts.MapFrom(src => src.Id))
                 .ForMember(e => e.Name, opts => opts.MapFrom(src => src.Name))
                 .ForMember(e => e.Status, opts => opts.MapFrom(src => src.IsCompleted ? "Выполнен" : CalculateStatus(src.StartDate, src.Term)))
@@ -16,17 +59,6 @@ namespace USProApplication.DataBase.Mappings
                 .ForMember(e => e.ContractNo, opts => opts.MapFrom(src => src.Number))
                 .ForMember(e => e.ContractDate, opts => opts.MapFrom(src => src.StartDate))
                 .ForMember(e => e.AccountNo, opts => opts.MapFrom(src => $"{src.PrepaymentBillNumber} от {src.PrepaymentBillDate}"));
-
-            //CreateMap<CounterpartyDTO, ClientShortInfo>()
-            //    .ForMember(e => e.Id, opts => opts.MapFrom(src => src.Id))
-            //    .ForMember(e => e.Name, opts => opts.MapFrom(src => src.Name))
-            //    .ForMember(e => e.ChiefFullName, opts => opts.MapFrom(src => src.Director))
-            //    .ForMember(e => e.Address, opts => opts.MapFrom(src => src.Address))
-            //    //.ForMember(e => e.ContractDate, opts => opts.MapFrom(src => src.))
-            //    .ForMember(e => e.IsExecutor, opts => opts.MapFrom(src => src.Executor));
-
-            //CreateMap<CounterpartyDTO, Entities.Counterparty>();
-            //CreateMap<Entities.Counterparty, CounterpartyDTO>();
         }
 
         private static string CalculateStatus(DateOnly? startDate, int? term)

@@ -1,4 +1,5 @@
-﻿using ReactiveUI;
+﻿using AutoMapper;
+using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
@@ -25,11 +26,13 @@ public class OrdersViewModel : ReactiveObject
 
     private readonly IOrdersRepository _repo;
     private readonly IDirectoryRepository _directoryRepository;
+    private readonly IMapper _mapper;
 
-    public OrdersViewModel(IOrdersRepository repository, IDirectoryRepository directoryRepository)
+    public OrdersViewModel(IOrdersRepository repository, IDirectoryRepository directoryRepository, IMapper mapper)
     {
         _repo = repository;
         _directoryRepository = directoryRepository;
+        _mapper = mapper;
 
         LoadOrdersAsync();
 
@@ -85,15 +88,14 @@ public class OrdersViewModel : ReactiveObject
 
         if (dialog.ShowDialog(new OrderDTO(), executors, clients, services, out OrderDTO? result))
         {
-            //if (result != null)
-            //{
-            //    result.Id = Guid.NewGuid();
-            //    await _repo.AddAsync(result);
+            if (result != null)
+            {
+                result.Id = Guid.NewGuid();
 
-            //    Обновляем полную коллекцию и фильтруем
-            //    Сounterparties.Add(result);
-            //    ApplyFilter();
-            //}
+                await _repo.AddAsync(result);
+                Orders.Add(_mapper.Map<OrderShortInfo>(result));
+                ApplyFilter();
+            }
         }
     }
 
@@ -101,24 +103,21 @@ public class OrdersViewModel : ReactiveObject
     {
         if (SelectedOrder != null)
         {
+            var executors = await _directoryRepository.GetCounterpartiesAsync(true);
+            var clients = await _directoryRepository.GetCounterpartiesAsync(false);
+            var services = await _directoryRepository.GetServicesAsync();
             OrderDialog dialog = new();
 
-    //        if (!dialog.ShowDialog(SelectedService.Clone(), out CounterpartyDTO? result))
-    //            return;
+            var order = await _repo.GetByIdAsync(SelectedOrder.Id);
 
-    //        if (result != null)
-    //        {
-    //            await _repo.UpdateAsync(result);
+            if (order != null && dialog.ShowDialog(order, executors, clients, services, out OrderDTO? result))
+            {
+                if (result != null)
+                {
 
-    //            // Обновляем запись в полной коллекции и фильтруем
-    //            //var index = Services.IndexOf(SelectedService);
-    //            //if (index >= 0)
-    //            //{
-    //            //    Services[index] = result;
-    //            //}
-
+                }
                 ApplyFilter();
-    //        }
+            }
         }
     }
 
