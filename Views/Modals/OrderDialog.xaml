@@ -151,7 +151,7 @@
 
             <TabItem Header="Стоимость">
                 <StackPanel>
-                    <materialDesign:Card Padding="4 4" Margin="7">
+                    <materialDesign:Card Padding="4" Margin="7">
                         <StackPanel Orientation="Horizontal">
                             <DockPanel Width="110" HorizontalAlignment="Left" Margin="4 0 0 0">
                                 <CheckBox Content="НДС, %" IsChecked="{Binding Order.UsingNDS, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
@@ -176,6 +176,50 @@
                             ToolTip="Автоматический расчет" Height="25" Width="25">
                                 <materialDesign:PackIcon Kind="Calculator" Foreground="White" Width="20" Height="20"/>
                             </Button>
+                        </StackPanel>
+                    </materialDesign:Card>
+
+                    <materialDesign:Card Padding="4" Margin="7">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="4 0 0 0">
+                                <TextBlock Text="Предоплата, %"/>
+                                <TextBox MaxLength="3" Margin="20 0 0 0" Text="{Binding Order.PrepaymentPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    HorizontalContentAlignment="Center" FontSize="14" Width="50"
+                                 PreviewTextInput="TextBox_PreviewTextInput"/>
+                                <TextBlock Text="Счет №" FontSize="14" Margin="20 0 0 0" VerticalAlignment="Bottom"/>
+                                <TextBox VerticalAlignment="Bottom" Margin="6 0 0 0" Width="130" 
+                                         HorizontalContentAlignment="Center"
+                                         Text="{Binding Order.PrepaymentBillNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         FontSize="14"/>
+                                <TextBlock Text="от" Margin="8 0" FontSize="14" VerticalAlignment="Bottom"/>
+                                <DatePicker Width="120" SelectedDate="{Binding Order.PrepaymentBillDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="4 0 0 0">
+                                <TextBlock Text="Выполнение, %"/>
+                                <TextBox MaxLength="3" Margin="20 0 0 0" Text="{Binding Order.ExecutionPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    HorizontalContentAlignment="Center" FontSize="14" Width="50"
+                                 PreviewTextInput="TextBox_PreviewTextInput"/>
+                                <TextBlock Text="Счет №" FontSize="14" Margin="20 0 0 0" VerticalAlignment="Bottom"/>
+                                <TextBox VerticalAlignment="Bottom" Margin="6 0 0 0" Width="130" 
+                                         HorizontalContentAlignment="Center"
+                                         Text="{Binding Order.ExecutionBillNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         FontSize="14"/>
+                                <TextBlock Text="от" Margin="8 0" FontSize="14" VerticalAlignment="Bottom"/>
+                                <DatePicker Width="120" SelectedDate="{Binding Order.ExecutionBillDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="4 0 0 0">
+                                <TextBlock Text="Согласование, %"/>
+                                <TextBox MaxLength="3" Margin="5 0 0 0" Text="{Binding Order.ApprovalPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    HorizontalContentAlignment="Center" FontSize="14" Width="50"
+                                 PreviewTextInput="TextBox_PreviewTextInput"/>
+                                <TextBlock Text="Счет №" FontSize="14" Margin="20 0 0 0" VerticalAlignment="Bottom"/>
+                                <TextBox VerticalAlignment="Bottom" Margin="6 0 0 0" Width="130" 
+                                         HorizontalContentAlignment="Center"
+                                         Text="{Binding Order.ApprovalBillNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         FontSize="14"/>
+                                <TextBlock Text="от" Margin="8 0" FontSize="14" VerticalAlignment="Bottom"/>
+                                <DatePicker Width="120" SelectedDate="{Binding Order.ApprovalBillDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>                            
                         </StackPanel>
                     </materialDesign:Card>
                 </StackPanel>

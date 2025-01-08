@@ -25,6 +25,11 @@
 
             <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
                 <Setter Property="FontFamily" Value="{StaticResource GilroyRegular}" />
+                <Setter Property="materialDesign:TextFieldAssist.CharacterCounterStyle">
+                    <Setter.Value>
+                        <Style TargetType="TextBlock" />
+                    </Setter.Value>
+                </Setter>
             </Style>
 
             <Style TargetType="Label" BasedOn="{StaticResource MaterialDesignLabel}">
@@ -44,7 +49,7 @@
                 <Setter Property="FontSize" Value="14"/>
                 <Setter Property="HorizontalContentAlignment" Value="Center"/>
             </Style>
-            
+
             <ResourceDictionary.MergedDictionaries>
 
                 <materialDesign:BundledTheme BaseTheme="Light" 

@@ -44,7 +44,7 @@
                 <DataGridTextColumn Header="Площадь" Width="auto" Binding="{Binding Square}" />
                 <DataGridTextColumn Header="Договор" Width="auto" Binding="{Binding ContractNo}" />
                 <DataGridTextColumn Header="Дата договора" Width="140" Binding="{Binding ContractDate, StringFormat='dd.MM.yyyy'}"/>
-                <DataGridTextColumn Header="Счет" Width="140" Binding="{Binding AccountNo}"/>
+                <!--<DataGridTextColumn Header="Счет" Width="140" Binding="{Binding AccountNo}"/>-->
                 <DataGridTextColumn Header="Статус" Width="auto" Binding="{Binding Status}">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">

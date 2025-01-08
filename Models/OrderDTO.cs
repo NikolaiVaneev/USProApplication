@@ -1,4 +1,6 @@
-﻿namespace USProApplication.Models
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace USProApplication.Models
 {
     public class OrderDTO
     {
@@ -36,5 +38,18 @@
         public Guid? CustomerId { get; set; }
 
         public ICollection<Guid>? SelectedServicesIds { get; set; }
+
+
+        public DateTime? PrepaymentBillDate { get; set; }
+        public string? PrepaymentBillNumber { get; set; }
+        public sbyte? PrepaymentPercent { get; set; }
+
+        public DateTime? ExecutionBillDate { get; set; }
+        public string? ExecutionBillNumber { get; set; }
+        public sbyte? ExecutionPercent { get; set; }
+
+        public DateTime? ApprovalBillDate { get; set; }
+        public string? ApprovalBillNumber { get; set; }
+        public sbyte? ApprovalPercent { get; set; }
     }
 }

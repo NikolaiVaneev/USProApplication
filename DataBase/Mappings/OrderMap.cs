@@ -25,6 +25,16 @@ namespace USProApplication.DataBase.Mappings
                 .ForMember(e => e.СompletionDate, opts => opts.MapFrom(src => src.СompletionDate.HasValue
                     ? src.СompletionDate.Value.ToDateTime(TimeOnly.MinValue)
                     : (DateTime?)null))
+                .ForMember(e => e.PrepaymentBillDate, opts => opts.MapFrom(src => src.PrepaymentBillDate.HasValue
+                    ? src.PrepaymentBillDate.Value.ToDateTime(TimeOnly.MinValue)
+                    : (DateTime?)null))
+                .ForMember(e => e.ExecutionBillDate, opts => opts.MapFrom(src => src.ExecutionBillDate.HasValue
+                    ? src.ExecutionBillDate.Value.ToDateTime(TimeOnly.MinValue)
+                    : (DateTime?)null))
+                .ForMember(e => e.ApprovalBillDate, opts => opts.MapFrom(src => src.ApprovalBillDate.HasValue
+                    ? src.ApprovalBillDate.Value.ToDateTime(TimeOnly.MinValue)
+                    : (DateTime?)null))
+
                 .ForMember(e => e.Price, opts => opts.MapFrom(src => src.Price))
                 .ForMember(e => e.PriceToMeter, opts => opts.MapFrom(src => src.PriceToMeter))
                 .ForMember(e => e.SelectedServicesIds, opts => opts.MapFrom(src => src.Services.Select(s => s.Id)));
@@ -45,6 +55,15 @@ namespace USProApplication.DataBase.Mappings
                     : (DateOnly?)null))
                 .ForMember(e => e.СompletionDate, opts => opts.MapFrom(src => src.СompletionDate.HasValue
                     ? DateOnly.FromDateTime(src.СompletionDate.Value)
+                    : (DateOnly?)null))
+                .ForMember(e => e.PrepaymentBillDate, opts => opts.MapFrom(src => src.PrepaymentBillDate.HasValue
+                    ? DateOnly.FromDateTime(src.PrepaymentBillDate.Value)
+                    : (DateOnly?)null))
+                .ForMember(e => e.ExecutionBillDate, opts => opts.MapFrom(src => src.ExecutionBillDate.HasValue
+                    ? DateOnly.FromDateTime(src.ExecutionBillDate.Value)
+                    : (DateOnly?)null))
+                .ForMember(e => e.ApprovalBillDate, opts => opts.MapFrom(src => src.ApprovalBillDate.HasValue
+                    ? DateOnly.FromDateTime(src.ApprovalBillDate.Value)
                     : (DateOnly?)null))
                 .ForMember(e => e.Price, opts => opts.MapFrom(src => src.Price))
                 .ForMember(e => e.PriceToMeter, opts => opts.MapFrom(src => src.PriceToMeter))
