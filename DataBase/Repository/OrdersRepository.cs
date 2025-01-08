@@ -7,14 +7,37 @@ namespace USProApplication.DataBase.Repository
 {
     public class OrdersRepository(IDbContextFactory<AppDbContext> _contextFactory, IMapper mapper) : IOrdersRepository
     {
-        public Task AddAsync(OrderDTO entity)
+        public async Task AddAsync(OrderDTO entity)
         {
-            throw new NotImplementedException();
+            await using var context = _contextFactory.CreateDbContext();
+
+            var obj = mapper.Map<Entities.Order>(entity);
+
+            if (entity.SelectedServicesIds != null)
+            {
+                foreach (var item in entity.SelectedServicesIds)
+                {
+                    var service = await context.Services.FindAsync(item);
+                    if (service != null)
+                    {
+                        obj.Services.Add(service);
+                    }
+                }
+            }
+
+            await context.Orders.AddAsync(obj);
+            await context.SaveChangesAsync();
         }
 
-        public Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Guid id)
         {
-            throw new NotImplementedException();
+            await using var context = _contextFactory.CreateDbContext();
+            var entity = await context.Orders.FindAsync(id);
+            if (entity != null)
+            {
+                context.Orders.Remove(entity);
+                await context.SaveChangesAsync();
+            }
         }
 
         public Task<List<OrderDTO>> GetAllAsync()

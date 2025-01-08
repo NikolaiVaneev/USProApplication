@@ -63,8 +63,8 @@ public class Order : BaseEntity
     public string? ApprovalBillNumber { get; set; }
     [Comment("Процент оплаты согласования")]
     public int? ApprovalPercent { get; set; }
-
-
+    [Comment("НДС")]
+    public int? NDS { get; set; }
     [Comment("Идентификатор исполнителя")]
     public Guid? ExecutorId { get; set; }
 

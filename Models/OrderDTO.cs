@@ -42,14 +42,14 @@ namespace USProApplication.Models
 
         public DateTime? PrepaymentBillDate { get; set; }
         public string? PrepaymentBillNumber { get; set; }
-        public sbyte? PrepaymentPercent { get; set; }
+        public sbyte? PrepaymentPercent { get; set; } = 0;
 
         public DateTime? ExecutionBillDate { get; set; }
         public string? ExecutionBillNumber { get; set; }
-        public sbyte? ExecutionPercent { get; set; }
+        public sbyte? ExecutionPercent { get; set; } = 0;
 
         public DateTime? ApprovalBillDate { get; set; }
         public string? ApprovalBillNumber { get; set; }
-        public sbyte? ApprovalPercent { get; set; }
+        public sbyte? ApprovalPercent { get; set; } = 0;
     }
 }

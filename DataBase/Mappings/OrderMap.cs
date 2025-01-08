@@ -35,6 +35,8 @@ namespace USProApplication.DataBase.Mappings
                     ? src.ApprovalBillDate.Value.ToDateTime(TimeOnly.MinValue)
                     : (DateTime?)null))
 
+                .ForMember(e => e.NDS, opts => opts.MapFrom(src => src.NDS ?? 0))
+                .ForMember(e => e.UsingNDS, opts => opts.MapFrom(src => src.NDS != null))
                 .ForMember(e => e.Price, opts => opts.MapFrom(src => src.Price))
                 .ForMember(e => e.PriceToMeter, opts => opts.MapFrom(src => src.PriceToMeter))
                 .ForMember(e => e.SelectedServicesIds, opts => opts.MapFrom(src => src.Services.Select(s => s.Id)));
@@ -67,9 +69,20 @@ namespace USProApplication.DataBase.Mappings
                     : (DateOnly?)null))
                 .ForMember(e => e.Price, opts => opts.MapFrom(src => src.Price))
                 .ForMember(e => e.PriceToMeter, opts => opts.MapFrom(src => src.PriceToMeter))
+                .ForMember(e => e.NDS, opts => opts.MapFrom(src => src.UsingNDS && src.NDS > 0 ? src.NDS : (double?)null))
                 .ForMember(e => e.Services, opts => opts.Ignore()); // Нужно обработать отдельно
 
             CreateMap<Order, OrderShortInfo>()
+                .ForMember(e => e.Id, opts => opts.MapFrom(src => src.Id))
+                .ForMember(e => e.Name, opts => opts.MapFrom(src => src.Name))
+                .ForMember(e => e.Status, opts => opts.MapFrom(src => src.IsCompleted ? "Выполнен" : CalculateStatus(src.StartDate, src.Term)))
+                .ForMember(e => e.Address, opts => opts.MapFrom(src => src.Address))
+                .ForMember(e => e.Square, opts => opts.MapFrom(src => src.Square))
+                .ForMember(e => e.ContractNo, opts => opts.MapFrom(src => src.Number))
+                .ForMember(e => e.ContractDate, opts => opts.MapFrom(src => src.StartDate))
+                .ForMember(e => e.AccountNo, opts => opts.MapFrom(src => $"{src.PrepaymentBillNumber} от {src.PrepaymentBillDate}"));
+
+            CreateMap<OrderDTO, OrderShortInfo>()
                 .ForMember(e => e.Id, opts => opts.MapFrom(src => src.Id))
                 .ForMember(e => e.Name, opts => opts.MapFrom(src => src.Name))
                 .ForMember(e => e.Status, opts => opts.MapFrom(src => src.IsCompleted ? "Выполнен" : CalculateStatus(src.StartDate, src.Term)))
@@ -89,6 +102,19 @@ namespace USProApplication.DataBase.Mappings
 
             var endDate = startDate.Value.AddDays(term.Value);
             var today = DateOnly.FromDateTime(DateTime.Today);
+
+            return endDate < today ? "Просрочен" : "В работе";
+        }
+
+        private static string CalculateStatus(DateTime? startDate, int? term)
+        {
+            if (!startDate.HasValue || !term.HasValue)
+            {
+                return "В работе"; // Нет данных для определения статуса
+            }
+
+            var endDate = startDate.Value.AddDays(term.Value);
+            var today = DateTime.Today;
 
             return endDate < today ? "Просрочен" : "В работе";
         }
