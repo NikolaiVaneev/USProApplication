@@ -75,7 +75,7 @@ namespace USProApplication.DataBase.Mappings
             CreateMap<Order, OrderShortInfo>()
                 .ForMember(e => e.Id, opts => opts.MapFrom(src => src.Id))
                 .ForMember(e => e.Name, opts => opts.MapFrom(src => src.Name))
-                .ForMember(e => e.Status, opts => opts.MapFrom(src => src.IsCompleted ? "Выполнен" : CalculateStatus(src.StartDate, src.Term)))
+                .ForMember(e => e.Status, opts => opts.MapFrom(src => src.IsCompleted ? "Выполнен" : "В работе"))
                 .ForMember(e => e.Address, opts => opts.MapFrom(src => src.Address))
                 .ForMember(e => e.Square, opts => opts.MapFrom(src => src.Square))
                 .ForMember(e => e.ContractNo, opts => opts.MapFrom(src => src.Number))
@@ -84,39 +84,13 @@ namespace USProApplication.DataBase.Mappings
             CreateMap<OrderDTO, OrderShortInfo>()
                 .ForMember(e => e.Id, opts => opts.MapFrom(src => src.Id))
                 .ForMember(e => e.Name, opts => opts.MapFrom(src => src.Name))
-                .ForMember(e => e.Status, opts => opts.MapFrom(src => src.IsCompleted ? "Выполнен" : CalculateStatus(src.StartDate, src.Term)))
+                .ForMember(e => e.Status, opts => opts.MapFrom(src => src.IsCompleted ? "Выполнен" : "В работе"))
                 .ForMember(e => e.Address, opts => opts.MapFrom(src => src.Address))
                 .ForMember(e => e.Square, opts => opts.MapFrom(src => src.Square))
                 .ForMember(e => e.ContractNo, opts => opts.MapFrom(src => src.Number))
                 .ForMember(e => e.ContractDate, opts => opts.MapFrom(src => src.StartDate.HasValue
                     ? DateOnly.FromDateTime(src.StartDate.Value)
                     : (DateOnly?)null));
-        }
-
-        private static string CalculateStatus(DateOnly? startDate, int? term)
-        {
-            if (!startDate.HasValue || !term.HasValue)
-            {
-                return "В работе"; // Нет данных для определения статуса
-            }
-
-            var endDate = startDate.Value.AddDays(term.Value);
-            var today = DateOnly.FromDateTime(DateTime.Today);
-
-            return endDate < today ? "Просрочен" : "В работе";
-        }
-
-        private static string CalculateStatus(DateTime? startDate, int? term)
-        {
-            if (!startDate.HasValue || !term.HasValue)
-            {
-                return "В работе"; // Нет данных для определения статуса
-            }
-
-            var endDate = startDate.Value.AddDays(term.Value);
-            var today = DateTime.Today;
-
-            return endDate < today ? "Просрочен" : "В работе";
         }
     }
 }

@@ -219,12 +219,30 @@
                                          FontSize="14"/>
                                 <TextBlock Text="от" Margin="8 0" FontSize="14" VerticalAlignment="Bottom"/>
                                 <DatePicker Width="120" SelectedDate="{Binding Order.ApprovalBillDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>                            
+                            </StackPanel>
                         </StackPanel>
                     </materialDesign:Card>
                 </StackPanel>
             </TabItem>
         </TabControl>
+
+        <materialDesign:PopupBox StaysOpen="False" Grid.Row="3" Margin="5">
+            <materialDesign:PopupBox.ToggleContent>
+                <materialDesign:PackIcon Kind="FileWordOutline" Width="30" Height="30" Foreground="#FF198FDC"/>
+            </materialDesign:PopupBox.ToggleContent>
+            <Menu Margin="5 0">
+                <MenuItem Header="Договор"/>
+                <MenuItem Header="Счет">
+                    <MenuItem Header="Предоплата"/>
+                    <MenuItem Header="Выполнение"/>
+                    <MenuItem Header="Согласование"/>
+                </MenuItem>
+                <MenuItem Header="Договор-счет"/>
+                <MenuItem Header="Акт"/>
+                <MenuItem Header="УПД"/>
+            </Menu>
+        </materialDesign:PopupBox>
+
 
         <Button Grid.Row="2" Content="Cохранить" Margin="5" Width="175" TabIndex="4"
             Command="{Binding Apply}"
