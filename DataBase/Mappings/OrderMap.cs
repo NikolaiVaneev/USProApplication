@@ -39,6 +39,7 @@ namespace USProApplication.DataBase.Mappings
                 .ForMember(e => e.UsingNDS, opts => opts.MapFrom(src => src.NDS != null))
                 .ForMember(e => e.Price, opts => opts.MapFrom(src => src.Price))
                 .ForMember(e => e.PriceToMeter, opts => opts.MapFrom(src => src.PriceToMeter))
+                .ForMember(e => e.AdditionalService, opts => opts.MapFrom(src => src.AdditionalService))
                 .ForMember(e => e.SelectedServicesIds, opts => opts.MapFrom(src => src.Services.Select(s => s.Id)));
 
             CreateMap<OrderDTO, Order>()
@@ -70,6 +71,7 @@ namespace USProApplication.DataBase.Mappings
                 .ForMember(e => e.Price, opts => opts.MapFrom(src => src.Price))
                 .ForMember(e => e.PriceToMeter, opts => opts.MapFrom(src => src.PriceToMeter))
                 .ForMember(e => e.NDS, opts => opts.MapFrom(src => src.UsingNDS && src.NDS > 0 ? src.NDS : (double?)null))
+                .ForMember(e => e.AdditionalService, opts => opts.MapFrom(src => src.AdditionalService))
                 .ForMember(e => e.Services, opts => opts.Ignore()); // Нужно обработать отдельно
 
             CreateMap<Order, OrderShortInfo>()

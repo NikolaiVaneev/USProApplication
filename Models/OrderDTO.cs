@@ -51,5 +51,7 @@ namespace USProApplication.Models
         public DateTime? ApprovalBillDate { get; set; }
         public string? ApprovalBillNumber { get; set; }
         public sbyte? ApprovalPercent { get; set; } = 0;
+
+        public string? AdditionalService { get; set; }
     }
 }

@@ -134,18 +134,26 @@
                 </TabItem.Header>
 
                 <materialDesign:Card Padding="10 6" Margin="7">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Height="248">
-                        <ItemsControl ItemsSource="{Binding Services}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <DockPanel LastChildFill="False">
-                                        <CheckBox DockPanel.Dock="Left" IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding Name}" VerticalContentAlignment="Center" />
-                                        <TextBlock DockPanel.Dock="Right" FontSize="13" Text="{Binding Price, StringFormat=C}" VerticalAlignment="Center" Margin="0 0 10 0"/>
-                                    </DockPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
+                    <StackPanel>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Height="245">
+                            <ItemsControl ItemsSource="{Binding Services}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <DockPanel LastChildFill="False">
+                                            <CheckBox DockPanel.Dock="Left" IsChecked="{Binding IsChecked, Mode=TwoWay}" Content="{Binding Name}" VerticalContentAlignment="Center" />
+                                            <TextBlock DockPanel.Dock="Right" FontSize="13" Text="{Binding Price, StringFormat=C}" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                                        </DockPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                        <DockPanel LastChildFill="True">
+                            <TextBlock Text="Доп. услуга" FontSize="14"/>
+                            <TextBox VerticalAlignment="Center" Margin="6 0 0 0"
+                                    Text="{Binding Order.AdditionalService, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    FontSize="14"/>
+                        </DockPanel>
+                    </StackPanel>
                 </materialDesign:Card>
             </TabItem>
 

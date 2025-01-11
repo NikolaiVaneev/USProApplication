@@ -85,4 +85,7 @@ public class Order : BaseEntity
 
     [Comment("Услуги")]
     public virtual ICollection<Service> Services { get; set; } = [];
+
+    [Comment("Дополнительная услуга")]
+    public string? AdditionalService { get; set; }
 }
