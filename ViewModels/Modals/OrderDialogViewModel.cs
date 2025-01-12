@@ -100,13 +100,21 @@ public class OrderDialogViewModel(IDocCreator docCreator) : ReactiveObject
     {
         try
         {
-            await docCreator.CreateContractAsync(Order!, NeedStamp);
+            if (Order!.ParentId == null)
+            {
+                await docCreator.CreateContractAsync(Order!, NeedStamp);
+            }
+            else
+            {
+                await docCreator.CreateAdditionalContractAsync(Order!, NeedStamp);
+            }
+            
         }
         catch (Exception ex)
         {
             MessageBox.Show(ex.Message, "Ошибка создания документа", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
-    }, () => !string.IsNullOrWhiteSpace(Order?.Name));
+    }, () => !string.IsNullOrWhiteSpace(Order?.Name) || !string.IsNullOrWhiteSpace(Order?.ParentOrder?.Name));
 
     private AsyncCommand? _createPrepaymentInvoiceCommand;
     public AsyncCommand CreatePrepaymentInvoiceCommand => _createPrepaymentInvoiceCommand ??= new AsyncCommand(async () =>

@@ -10,6 +10,14 @@
         Task CreateContractAsync(OrderDTO order, bool stamp);
 
         /// <summary>
+        /// Создать дополнительный договор
+        /// </summary>
+        /// <param name="order">Объект договора</param>
+        /// <param name="stamp">Штамп</param>
+        /// <returns></returns>
+        Task CreateAdditionalContractAsync(OrderDTO order, bool stamp);
+
+        /// <summary>
         /// Создать договор-счет
         /// </summary>
         /// <param name="order">Объект договора</param>

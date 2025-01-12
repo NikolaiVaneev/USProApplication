@@ -2,14 +2,16 @@
 using Spire.Doc;
 using Spire.Doc.Documents;
 using System.IO;
+using System.Text;
 using USProApplication.DataBase.Entities;
 using USProApplication.Models;
 using USProApplication.Models.Repositories;
 using USProApplication.Utils;
+using Service = USProApplication.Models.Service;
 
 namespace USProApplication.Services
 {
-    public class DocCreator(ICounterpartyRepository counterpartyRepository) : IDocCreator
+    public class DocCreator(ICounterpartyRepository counterpartyRepository, IBaseRepository<Service> serviceRepository) : IDocCreator
     {
         public async Task CreateActAsync(OrderDTO order, bool stamp)
         {
@@ -106,6 +108,113 @@ namespace USProApplication.Services
             }
         }
 
+        public async Task CreateAdditionalContractAsync(OrderDTO order, bool stamp)
+        {
+            string templatePath = Path.Combine("Templates", "AdditionalContract.docx");
+            string outputPath = Path.Combine(Path.GetTempPath(), $"ДС {order.Number!.Replace('/', '_')} к договору {order.ParentOrder!.Number!.Replace('/', '_')}-{order.Name}.docx");
+
+            Document doc = new();
+            try
+            {
+                doc.LoadFromFile(templatePath);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Невозможно открыть шаблон документа. Вероятно, он отсутствует в папке Templates.");
+            }
+
+            if (!stamp) RemoveImages(doc);
+
+            doc.Replace("{Number}", order.Number, true, true);
+            doc.Replace("{ContractNumber}", order.ParentOrder.Number, true, true);
+            doc.Replace("{ContractDate}", $"{DateConverter.ConvertDateToString(order.ParentOrder.StartDate)}", true, true);
+            doc.Replace("{Date}", $"{DateConverter.ConvertDateToString(order.StartDate)}", true, true);
+            doc.Replace("{Address}", order.ParentOrder.Address, true, true);
+            doc.Replace("{Square}", GetNumberDescription(order.ParentOrder.Square, true), true, true);
+            doc.Replace("{Deadline}", GetNumberDescription(order.Term), true, true);
+
+            if (order.SelectedServicesIds != null)
+            {
+                var services = new StringBuilder();
+                var servicesCollection = await serviceRepository.GetAllAsync();
+                foreach (var serviceId in order.SelectedServicesIds)
+                {
+                    var service = servicesCollection.FirstOrDefault(s => s.Id == serviceId);
+
+                    if (service != null)
+                    {
+                        services.Append($"- Раздел «{service.Name}»,\n");
+                    }
+                }
+
+                doc.Replace("{Services}", services.ToString(), true, true);
+            }
+
+            var client = await counterpartyRepository.GetByIdAsync((Guid)order.ParentOrder!.CustomerId!);
+            var executor = await counterpartyRepository.GetByIdAsync((Guid)order.ParentOrder!.ExecutorId!);
+
+            var morpherService = new MorpherService();
+
+            doc.Replace("{ClientOrg}", client!.Name, true, true);
+            doc.Replace("{ClientFullName}", await morpherService.GetDeclensionAsync(client.Director, MorpherService.RussianCase.Accusative), true, true);
+            doc.Replace("{ClientPosition}", GetDirectorPosition(client.DirectorPosition, false), true, true);
+            doc.Replace("{ClientShortName}", await morpherService.GetShortNameAsync(client.Director, MorpherService.RussianCase.Nominative), true, true);
+
+            doc.Replace("{ExecutorOrg}", executor!.Name, true, true);
+            doc.Replace("{ExecutorFullName}", await morpherService.GetDeclensionAsync(executor.Director, MorpherService.RussianCase.Accusative), true, true);
+            doc.Replace("{ExecutorPosition}", GetDirectorPosition(executor.DirectorPosition, false), true, true);
+            doc.Replace("{ExecutorShortName}", await morpherService.GetShortNameAsync(executor.Director, MorpherService.RussianCase.Nominative), true, true);
+
+            doc.Replace("{Price}", string.Format("{0:N2}", order.Price), true, true);
+            doc.Replace("{FullPrice}", DecimalConverter.ConvertDecimalToString(order.Price), true, true);
+
+            if (order.ParentOrder!.UsingNDS && order.ParentOrder!.NDS > 0)
+            {
+                var tax = Math.Round((decimal)(order.Price! * order.ParentOrder!.NDS / (100 + order.ParentOrder!.NDS)), 2);
+                doc.Replace("{NDSType}", $"В том числе НДС {order.ParentOrder!.NDS}%", true, true);
+                doc.Replace("{NDS}", string.Format("{0:N2}", tax), true, true);
+                doc.Replace("{NDSNotExist}", string.Empty, true, true);
+                doc.Replace("{NDSExist}", $"В том числе НДС {order.ParentOrder!.NDS}% {string.Format("{0:N2}", tax)} ({DecimalConverter.ConvertDecimalToString(tax)}) рублей", true, true);
+            }
+            else
+            {
+                doc.Replace("{NDSNotExist}", "НДС не облагается (Уведомление о возможности применения УСН № 2490 от 03.12.2007 г.)", true, true);
+                doc.Replace("{NDSExist}", string.Empty, true, true);
+                doc.Replace("{NDSType}", "Без налога (НДС)", true, true);
+                doc.Replace("{NDS}", "-", true, true);
+            }
+
+            var calculations = new StringBuilder();
+
+            if (order.PrepaymentPercent != null && order.PrepaymentPercent > 0 && order.ExecutionPercent != null && order.ExecutionPercent > 0)
+            {
+                calculations.Append($"В течение 3 (Трех) банковских дней с момента подписания настоящего Дополнительного соглашения Заказчик обязан произвести предоплату в размере {GetNumberDescription(order.PrepaymentPercent)} % от стоимости работ, указанных в п.3 настоящего Дополнительного соглашения. ");
+                calculations.Append($"Вторую часть в размере {GetNumberDescription(order.ExecutionPercent)} % заказчик должен внести в течении двух банковских дней после полного выполнения подрядчиком всех разделов проектной документации указанных в п. 2. ");
+            }
+
+            if (order.PrepaymentPercent > 0 && (order.ExecutionPercent == 0 || order.ExecutionPercent == null))
+            {
+                calculations.Append($"В течение 3 (Трех) банковских дней с момента подписания настоящего Дополнительного соглашения Заказчик обязан произвести предоплату в размере {GetNumberDescription(order.PrepaymentPercent)} % от стоимости работ, указанных в п.3 настоящего Дополнительного соглашения.");
+            }
+
+            if ((order.PrepaymentPercent == null || order.PrepaymentPercent == 0) && order.ExecutionPercent > 0)
+            {
+                calculations.Append($"В течение 3 (Трех) банковских дней с момента подписания настоящего Дополнительного соглашения Заказчик обязан произвести оплату в размере {GetNumberDescription(order.ExecutionPercent)} % от стоимости работ, указанных в п.3 настоящего Дополнительного соглашения.");
+            }
+
+            doc.Replace("{Calculations}", calculations.ToString(), true, true);
+
+            try
+            {
+                doc.SaveToFile(outputPath);
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(outputPath) { UseShellExecute = true });
+            }
+            catch (Exception)
+            {
+                throw new Exception("Невозможно сохранить договор. Вероятно, он уже открыт. Закройте документ и попробуйте снова");
+            }
+        }
+
         public async Task CreateContractInvoiceAsync(OrderDTO order, bool stamp)
         {
             string templatePath = Path.Combine("Templates", "ContractBill.docx");
@@ -127,7 +236,7 @@ namespace USProApplication.Services
             doc.Replace("{Address}", order.Address, true, true);
             doc.Replace("{Service}", order.AdditionalService, true, true);
             doc.Replace("{Square}", order.Square.ToString(), true, true);
-            doc.Replace("{Deadline}", GetDeadline(order.Square), true, true);
+            doc.Replace("{Deadline}", GetNumberDescription(order.Term), true, true);
             doc.Replace("{Date}", $"{DateConverter.ConvertDateToString(DateTime.Now)} г.", true, true);
             doc.Replace("{Price}", string.Format("{0:N2}", order.Price), true, true);
             doc.Replace("{FullPrice}", DecimalConverter.ConvertDecimalToString(order.Price), true, true);
@@ -389,41 +498,56 @@ namespace USProApplication.Services
             }
         }
 
-        private static string GetDeadline(int number)
+        private static string GetNumberDescription(int? number, bool inv = false)
         {
-            int term = number;
-            if (number == 0) return "нуля";
+            if (number == null || number == 0) return "нуля";
+            int term = (int)number;
 
-            string[] units = { "", "одного", "двух", "трех", "четырех", "пяти", "шести", "семи", "восьми", "девяти" };
-            string[] teens = { "десяти", "одиннадцати", "двенадцати", "тринадцати", "четырнадцати", "пятнадцати", "шестнадцати", "семнадцати", "восемнадцати", "девятнадцати" };
-            string[] tens = { "", "", "двадцати", "тридцати", "сорока", "пятидесяти", "шестидесяти", "семидесяти", "восьмидесяти", "девяноста" };
-            string[] hundreds = { "", "ста", "двухсот", "трехсот", "четырехсот", "пятисот", "шестисот", "семисот", "восьмисот", "девятисот" };
+            string[] units;
+            string[] tens;
+            string[] hundreds;
+            string[] teens;
+
+            if (inv)
+            {
+                units = ["", "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять"];
+                teens = ["десять", "одиннадцать", "двенадцать", "тринадцать", "четырнадцать", "пятнадцать", "шестнадцать", "семнадцать", "восемнадцать", "девятнадцать"];
+                tens = ["", "", "двадцать", "тридцать", "сорок", "пятьдесят", "шестьдесят", "семьдесят", "восемьдесят", "девяносто"];
+                hundreds = ["", "сто", "двести", "триста", "четыреста", "пятьсот", "шестьсот", "семьсот", "восемьсот", "девятьсот"];
+            }
+            else
+            {
+                units = ["", "одного", "двух", "трех", "четырех", "пяти", "шести", "семи", "восьми", "девяти"];
+                teens = ["десяти", "одиннадцати", "двенадцати", "тринадцати", "четырнадцати", "пятнадцати", "шестнадцати", "семнадцати", "восемнадцати", "девятнадцати"];
+                tens = ["", "", "двадцати", "тридцати", "сорока", "пятидесяти", "шестидесяти", "семидесяти", "восьмидесяти", "девяноста"];
+                hundreds = ["", "ста", "двухсот", "трехсот", "четырехсот", "пятисот", "шестисот", "семисот", "восьмисот", "девятисот"];
+            }
 
             var parts = new List<string>();
 
             if (number >= 100)
             {
-                int hundredPart = number / 100;
+                int hundredPart = (int)number / 100;
                 parts.Add(hundreds[hundredPart]);
                 number %= 100;
             }
 
             if (number >= 20)
             {
-                int tensPart = number / 10;
+                int tensPart = (int)number / 10;
                 parts.Add(tens[tensPart]);
                 number %= 10;
             }
 
             if (number >= 10)
             {
-                parts.Add(teens[number - 10]);
+                parts.Add(teens[(int)number - 10]);
                 number = 0;
             }
 
             if (number > 0)
             {
-                parts.Add(units[number]);
+                parts.Add(units[(int)number]);
             }
 
             return $"{term} ({string.Join(" ", parts)})";
@@ -519,5 +643,7 @@ namespace USProApplication.Services
                 _ => throw new NotImplementedException()
             };
         }
+
+
     }
 }
