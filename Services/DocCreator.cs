@@ -75,9 +75,6 @@ namespace USProApplication.Services
             Document doc = new();
             doc.LoadFromFile(templatePath);
 
-
-
-
             try
             {
                 doc.SaveToFile(outputPath);

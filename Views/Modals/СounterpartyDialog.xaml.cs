@@ -22,6 +22,7 @@ namespace USProApplication.Views.Modals
 
         private void Save(CounterpartyDTO? service)
         {
+            ((CounterpartyDialogViewModel)DataContext).OnSave -= Save;
             _service = service;
             DialogResult = true;
         }

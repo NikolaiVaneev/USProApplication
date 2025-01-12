@@ -16,6 +16,7 @@ namespace USProApplication.Views.Modals
 
         private void Save(Service? service)
         {
+            ((ServiceDialogViewModel)DataContext).OnSave -= Save;
             _service = service;
             DialogResult = true;
         }
