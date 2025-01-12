@@ -23,6 +23,7 @@ public class OrdersViewModel : ReactiveObject
     public ICommand AddCommand { get; }
     public ICommand EditCommand { get; }
     public ICommand DeleteCommand { get; }
+    public ICommand AddAdditionalOrder { get; }
 
     private readonly IOrdersRepository _repo;
     private readonly IDirectoryRepository _directoryRepository;
@@ -44,6 +45,7 @@ public class OrdersViewModel : ReactiveObject
         AddCommand = new AsyncCommand(AddOrderAsync);
         EditCommand = new AsyncCommand(EditOrderAsync, CanEditOrDelete);
         DeleteCommand = new AsyncCommand(DeleteOrderAsync, CanEditOrDelete);
+        AddAdditionalOrder = new AsyncCommand(AddAdditionalOrderAsync, CanAddAdditionalOrder);
     }
 
     private async void LoadOrdersAsync()
@@ -85,7 +87,40 @@ public class OrdersViewModel : ReactiveObject
         var services = await _directoryRepository.GetServicesAsync();
         OrderDialog dialog = new();
 
-        if (dialog.ShowDialog(new OrderDTO(), executors, clients, services, out OrderDTO? result))
+        var newOrder = new OrderDTO()
+        {
+            StartDate = DateTime.Now,
+        };
+
+        if (dialog.ShowDialog(newOrder, executors, clients, services, out OrderDTO? result))
+        {
+            if (result != null)
+            {
+                result.Id = Guid.NewGuid();
+
+                await _repo.AddAsync(result);
+                Orders.Add(_mapper.Map<OrderShortInfo>(result));
+                ApplyFilter();
+            }
+        }
+    }
+
+    private async Task AddAdditionalOrderAsync()
+    {
+        var services = await _directoryRepository.GetServicesAsync();
+        AdditionalOrderDialog dialog = new();
+
+        var parrentOrder = await _repo.GetByIdAsync(SelectedOrder!.Id);
+        var newOrder = new OrderDTO()
+        {
+            ParentId = SelectedOrder!.Id,
+            Email = parrentOrder?.Email,
+            StartDate = DateTime.Now,
+            Phone = parrentOrder?.Phone,
+            ParentOrder = parrentOrder
+        };
+
+        if (dialog.ShowDialog(newOrder, services, out OrderDTO? result))
         {
             if (result != null)
             {
@@ -100,7 +135,7 @@ public class OrdersViewModel : ReactiveObject
 
     private async Task EditOrderAsync()
     {
-        if (SelectedOrder != null)
+        if (SelectedOrder != null && SelectedOrder.IsMainOrder)
         {
             var executors = await _directoryRepository.GetCounterpartiesAsync(true);
             var clients = await _directoryRepository.GetCounterpartiesAsync(false);
@@ -111,7 +146,6 @@ public class OrdersViewModel : ReactiveObject
 
             if (order != null && dialog.ShowDialog(order, executors, clients, services, out OrderDTO? result))
             {
-
                 if (result != null)
                 {
                     await _repo.UpdateAsync(result);
@@ -125,7 +159,6 @@ public class OrdersViewModel : ReactiveObject
 
                     ApplyFilter();
                 }
-
             }
         }
     }
@@ -134,7 +167,7 @@ public class OrdersViewModel : ReactiveObject
     {
         if (SelectedOrder != null)
         {
-            var result = MessageBox.Show("Вы действительно хотите удалить выбранный заказ?", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = MessageBox.Show("Вы действительно хотите удалить выбранный договор?", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
                 await _repo.DeleteAsync(SelectedOrder.Id);
@@ -147,4 +180,5 @@ public class OrdersViewModel : ReactiveObject
     }
 
     private bool CanEditOrDelete() => SelectedOrder != null;
+    private bool CanAddAdditionalOrder() => SelectedOrder != null && SelectedOrder.IsMainOrder;
 }

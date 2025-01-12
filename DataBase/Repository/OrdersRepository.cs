@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using USProApplication.DataBase.Entities;
 using USProApplication.Models;
 using USProApplication.Models.Repositories;
 
@@ -49,8 +48,10 @@ namespace USProApplication.DataBase.Repository
         public async Task<OrderDTO?> GetByIdAsync(Guid id)
         {
             await using var context = _contextFactory.CreateDbContext();
+
             var entity = await context.Orders
                 .Include(x => x.Services)
+                .Include(x => x.ParentOrder)
                 .Where(x => x.Id == id).FirstOrDefaultAsync();
 
             return mapper.Map<OrderDTO>(entity);
@@ -60,7 +61,7 @@ namespace USProApplication.DataBase.Repository
         {
             await using var context = _contextFactory.CreateDbContext();
 
-            var orders = await context.Orders.ToListAsync();
+            var orders = await context.Orders.OrderByDescending(x => x.StartDate).ToListAsync();
             return mapper.Map<List<OrderShortInfo>>(orders);
         }
 

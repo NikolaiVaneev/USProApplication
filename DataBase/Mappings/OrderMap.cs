@@ -40,6 +40,7 @@ namespace USProApplication.DataBase.Mappings
                 .ForMember(e => e.Price, opts => opts.MapFrom(src => src.Price))
                 .ForMember(e => e.PriceToMeter, opts => opts.MapFrom(src => src.PriceToMeter))
                 .ForMember(e => e.AdditionalService, opts => opts.MapFrom(src => src.AdditionalService))
+                .ForMember(e => e.ParentId, opts => opts.MapFrom(src => src.ParentId))
                 .ForMember(e => e.SelectedServicesIds, opts => opts.MapFrom(src => src.Services.Select(s => s.Id)));
 
             CreateMap<OrderDTO, Order>()
@@ -71,25 +72,28 @@ namespace USProApplication.DataBase.Mappings
                 .ForMember(e => e.Price, opts => opts.MapFrom(src => src.Price))
                 .ForMember(e => e.PriceToMeter, opts => opts.MapFrom(src => src.PriceToMeter))
                 .ForMember(e => e.NDS, opts => opts.MapFrom(src => src.UsingNDS && src.NDS > 0 ? src.NDS : (double?)null))
+                .ForMember(e => e.ParentId, opts => opts.MapFrom(src => src.ParentId))
                 .ForMember(e => e.AdditionalService, opts => opts.MapFrom(src => src.AdditionalService))
                 .ForMember(e => e.Services, opts => opts.Ignore()); // Нужно обработать отдельно
 
             CreateMap<Order, OrderShortInfo>()
                 .ForMember(e => e.Id, opts => opts.MapFrom(src => src.Id))
-                .ForMember(e => e.Name, opts => opts.MapFrom(src => src.Name))
+                .ForMember(e => e.Name, opts => opts.MapFrom(src => src.ParentId == null ? src.Name : src.ParentOrder!.Name))
                 .ForMember(e => e.Status, opts => opts.MapFrom(src => src.IsCompleted ? "Выполнен" : "В работе"))
-                .ForMember(e => e.Address, opts => opts.MapFrom(src => src.Address))
+                .ForMember(e => e.Address, opts => opts.MapFrom(src => src.ParentId == null ? src.Address : src.ParentOrder!.Address))
                 .ForMember(e => e.Square, opts => opts.MapFrom(src => src.Square))
-                .ForMember(e => e.ContractNo, opts => opts.MapFrom(src => src.Number))
+                .ForMember(e => e.ContractNo, opts => opts.MapFrom(src => src.ParentId == null ? $"{src.Number}" : $"ДС №{src.Number} к {src.ParentOrder!.Number}"))
+                .ForMember(e => e.IsMainOrder, opts => opts.MapFrom(src => src.ParentId == null))
                 .ForMember(e => e.ContractDate, opts => opts.MapFrom(src => src.StartDate));
 
             CreateMap<OrderDTO, OrderShortInfo>()
                 .ForMember(e => e.Id, opts => opts.MapFrom(src => src.Id))
-                .ForMember(e => e.Name, opts => opts.MapFrom(src => src.Name))
+                .ForMember(e => e.Name, opts => opts.MapFrom(src => src.ParentId == null ? src.Name : src.ParentOrder!.Name))
                 .ForMember(e => e.Status, opts => opts.MapFrom(src => src.IsCompleted ? "Выполнен" : "В работе"))
-                .ForMember(e => e.Address, opts => opts.MapFrom(src => src.Address))
+                .ForMember(e => e.Address, opts => opts.MapFrom(src => src.ParentId == null ? src.Address : src.ParentOrder!.Address))
                 .ForMember(e => e.Square, opts => opts.MapFrom(src => src.Square))
-                .ForMember(e => e.ContractNo, opts => opts.MapFrom(src => src.Number))
+                .ForMember(e => e.ContractNo, opts => opts.MapFrom(src => src.ParentId == null ? $"{src.Number}" : $"ДС №{src.Number} к {src.ParentOrder!.Number}"))
+                .ForMember(e => e.IsMainOrder, opts => opts.MapFrom(src => src.ParentId == null))
                 .ForMember(e => e.ContractDate, opts => opts.MapFrom(src => src.StartDate.HasValue
                     ? DateOnly.FromDateTime(src.StartDate.Value)
                     : (DateOnly?)null));

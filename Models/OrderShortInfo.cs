@@ -33,5 +33,10 @@
         /// Статус
         /// </summary>
         public string Status { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Является основным договором
+        /// </summary>
+        public bool IsMainOrder { get; set; } = true;
     }
 }

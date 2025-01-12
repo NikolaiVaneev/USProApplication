@@ -4,7 +4,6 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using USProApplication.Models;
-using USProApplication.ViewModels;
 using USProApplication.ViewModels.Modals;
 
 namespace USProApplication.Views.Modals;

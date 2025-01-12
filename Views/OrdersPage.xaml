@@ -65,18 +65,23 @@
 
             <DataGrid.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Добавить новую запись" Command="{Binding AddCommand}">
+                    <MenuItem Header="Добавить новый договор" Command="{Binding AddCommand}">
                         <MenuItem.Icon>
                             <materialDesign:PackIcon Kind="Plus" Width="16" Height="16" />
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator />
-                    <MenuItem Header="Редактировать" Command="{Binding EditCommand}" IsEnabled="{Binding SelectedClient, Converter={StaticResource NullToBooleanConverter}}">
+                    <MenuItem Header="Добавить ДС" Command="{Binding AddAdditionalOrder}" IsEnabled="{Binding SelectedOrder.IsMainOrder}">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="FileDocumentPlusOutline" Width="16" Height="16"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Редактировать" Command="{Binding EditCommand}" IsEnabled="{Binding SelectedOrder, Converter={StaticResource NullToBooleanConverter}}">
                         <MenuItem.Icon>
                             <materialDesign:PackIcon Kind="Pencil" Width="16" Height="16" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Header="Удалить" Command="{Binding DeleteCommand}" IsEnabled="{Binding SelectedClient, Converter={StaticResource NullToBooleanConverter}}">
+                    <MenuItem Header="Удалить" Command="{Binding DeleteCommand}" IsEnabled="{Binding SelectedOrder, Converter={StaticResource NullToBooleanConverter}}">
                         <MenuItem.Icon>
                             <materialDesign:PackIcon Kind="Delete" Width="16" Height="16" />
                         </MenuItem.Icon>

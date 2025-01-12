@@ -39,7 +39,6 @@ namespace USProApplication.Models
 
         public ICollection<Guid>? SelectedServicesIds { get; set; }
 
-
         public DateTime? PrepaymentBillDate { get; set; }
         public string? PrepaymentBillNumber { get; set; }
         public sbyte? PrepaymentPercent { get; set; } = 0;
@@ -53,5 +52,9 @@ namespace USProApplication.Models
         public sbyte? ApprovalPercent { get; set; } = 0;
 
         public string? AdditionalService { get; set; }
+
+        public Guid? ParentId { get; set; }
+
+        public OrderDTO? ParentOrder { get; set; }
     }
 }
