@@ -204,11 +204,19 @@ public class OrdersViewModel : ReactiveObject
             var result = MessageBox.Show($"Вы действительно хотите удалить {type}?", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
-                await _repo.DeleteAsync(SelectedOrder.Id);
+                try
+                {
+                    await _repo.DeleteAsync(SelectedOrder.Id);
 
-                // Удаляем из полной коллекции и фильтруем
-                Orders.Remove(SelectedOrder);
-                ApplyFilter();
+                    // Удаляем из полной коллекции и фильтруем
+                    Orders.Remove(SelectedOrder);
+                    ApplyFilter();
+                }
+                catch 
+                { 
+                    MessageBox.Show("Невозможно удалить договор, имеющий связанные записи. Проверьте наличие дополнительных соглашений к данному договору", "Ошибка при удалении договора", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                
             }
         }
     }
