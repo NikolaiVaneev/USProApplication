@@ -34,6 +34,12 @@ namespace USProApplication.DataBase
                     j.HasKey("OrderId", "ServiceId"); 
                     j.ToTable("OrderServices"); 
                 });
+
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.ParentOrder)  
+                .WithMany(o => o.ChildOrders)  
+                .HasForeignKey(o => o.ParentId)  
+                .OnDelete(DeleteBehavior.Restrict); 
         }
 
         public DbSet<Service> Services { get; set; }

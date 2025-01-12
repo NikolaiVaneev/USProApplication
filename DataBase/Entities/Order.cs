@@ -88,4 +88,13 @@ public class Order : BaseEntity
 
     [Comment("Дополнительная услуга")]
     public string? AdditionalService { get; set; }
+
+
+    [Comment("Идентификатор родительского договора")]
+    public Guid? ParentId { get; set; }
+
+    [ForeignKey(nameof(ParentId))]
+    public virtual Order? ParentOrder { get; set; }
+
+    public virtual ICollection<Order> ChildOrders { get; set; } = [];
 }
