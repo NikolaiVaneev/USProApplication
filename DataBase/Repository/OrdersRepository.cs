@@ -25,6 +25,8 @@ namespace USProApplication.DataBase.Repository
                 }
             }
 
+            obj.ParentOrder = null;
+
             await context.Orders.AddAsync(obj);
             await context.SaveChangesAsync();
         }

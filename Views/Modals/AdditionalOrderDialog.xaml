@@ -79,17 +79,23 @@
                                 <TextBlock Margin="5 0" Text="Контрагенты" FontFamily="Roboto" FontSize="16" Padding="0" FontWeight="SemiBold"
                                 VerticalAlignment="Center"/>
                             </DockPanel>
-                            <DockPanel Margin="0 4 0 0">
+                            <DockPanel LastChildFill="True" Margin="0 4 0 0">
                                 <TextBlock Text="Исполнитель" FontSize="14" VerticalAlignment="Bottom"/>
-                                <TextBox VerticalAlignment="Bottom" Margin="6 0 0 0" 
-                                         Text="{Binding Order.ParentOrder.Executor.Name}" IsEnabled="False"
-                                         FontSize="14"/>
+                                <ComboBox Margin="6 0 0 0" FontSize="14" FontFamily="{StaticResource GilroyRegular}"
+                                    IsEditable="True" ItemsSource="{Binding Executors}"
+                                    DisplayMemberPath="Name"
+                                    SelectedValuePath="Id" IsEnabled="False"
+                                    SelectedValue="{Binding Order.ParentOrder.ExecutorId, UpdateSourceTrigger=PropertyChanged}">
+                                </ComboBox>
                             </DockPanel>
                             <DockPanel LastChildFill="True" Margin="0 4 0 0">
                                 <TextBlock Text="Заказчик" FontSize="14" VerticalAlignment="Bottom"/>
-                                <TextBox VerticalAlignment="Bottom" Margin="6 0 0 0" 
-                                         Text="{Binding Order.ParentOrder.Customer.Name}" IsEnabled="False"
-                                         FontSize="14"/>
+                                <ComboBox Margin="6 0 0 0" FontSize="14" FontFamily="{StaticResource GilroyRegular}"
+                                    IsEditable="True" ItemsSource="{Binding Customers}"
+                                    DisplayMemberPath="Name"
+                                    SelectedValuePath="Id" IsEnabled="False"
+                                    SelectedValue="{Binding Order.ParentOrder.CustomerId, UpdateSourceTrigger=PropertyChanged}">
+                                </ComboBox>
                             </DockPanel>
 
                             <Grid>
@@ -136,12 +142,6 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </ScrollViewer>
-                        <DockPanel LastChildFill="True">
-                            <TextBlock Text="Доп. услуга" FontSize="14"/>
-                            <TextBox VerticalAlignment="Center" Margin="6 0 0 0"
-                                    Text="{Binding Order.AdditionalService, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    FontSize="14"/>
-                        </DockPanel>
                     </StackPanel>
                 </materialDesign:Card>
             </TabItem>

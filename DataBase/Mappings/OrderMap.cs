@@ -81,7 +81,7 @@ namespace USProApplication.DataBase.Mappings
                 .ForMember(e => e.Name, opts => opts.MapFrom(src => src.ParentId == null ? src.Name : src.ParentOrder!.Name))
                 .ForMember(e => e.Status, opts => opts.MapFrom(src => src.IsCompleted ? "Выполнен" : "В работе"))
                 .ForMember(e => e.Address, opts => opts.MapFrom(src => src.ParentId == null ? src.Address : src.ParentOrder!.Address))
-                .ForMember(e => e.Square, opts => opts.MapFrom(src => src.Square))
+                .ForMember(e => e.Square, opts => opts.MapFrom(src => src.ParentId == null ? src.Square : src.ParentOrder!.Square))
                 .ForMember(e => e.ContractNo, opts => opts.MapFrom(src => src.ParentId == null ? $"{src.Number}" : $"ДС №{src.Number} к {src.ParentOrder!.Number}"))
                 .ForMember(e => e.IsMainOrder, opts => opts.MapFrom(src => src.ParentId == null))
                 .ForMember(e => e.ContractDate, opts => opts.MapFrom(src => src.StartDate));
@@ -91,7 +91,7 @@ namespace USProApplication.DataBase.Mappings
                 .ForMember(e => e.Name, opts => opts.MapFrom(src => src.ParentId == null ? src.Name : src.ParentOrder!.Name))
                 .ForMember(e => e.Status, opts => opts.MapFrom(src => src.IsCompleted ? "Выполнен" : "В работе"))
                 .ForMember(e => e.Address, opts => opts.MapFrom(src => src.ParentId == null ? src.Address : src.ParentOrder!.Address))
-                .ForMember(e => e.Square, opts => opts.MapFrom(src => src.Square))
+                .ForMember(e => e.Square, opts => opts.MapFrom(src => src.ParentId == null ? src.Square : src.ParentOrder!.Square))
                 .ForMember(e => e.ContractNo, opts => opts.MapFrom(src => src.ParentId == null ? $"{src.Number}" : $"ДС №{src.Number} к {src.ParentOrder!.Number}"))
                 .ForMember(e => e.IsMainOrder, opts => opts.MapFrom(src => src.ParentId == null))
                 .ForMember(e => e.ContractDate, opts => opts.MapFrom(src => src.StartDate.HasValue

@@ -107,7 +107,10 @@ public class OrdersViewModel : ReactiveObject
 
     private async Task AddAdditionalOrderAsync()
     {
+        var executors = await _directoryRepository.GetCounterpartiesAsync(true);
+        var clients = await _directoryRepository.GetCounterpartiesAsync(false);
         var services = await _directoryRepository.GetServicesAsync();
+
         AdditionalOrderDialog dialog = new();
 
         var parrentOrder = await _repo.GetByIdAsync(SelectedOrder!.Id);
@@ -117,10 +120,11 @@ public class OrdersViewModel : ReactiveObject
             Email = parrentOrder?.Email,
             StartDate = DateTime.Now,
             Phone = parrentOrder?.Phone,
-            ParentOrder = parrentOrder
+            ParentOrder = parrentOrder,
+            SelectedServicesIds = parrentOrder?.SelectedServicesIds
         };
 
-        if (dialog.ShowDialog(newOrder, services, out OrderDTO? result))
+        if (dialog.ShowDialog(newOrder, executors, clients, services, out OrderDTO? result))
         {
             if (result != null)
             {
@@ -161,13 +165,43 @@ public class OrdersViewModel : ReactiveObject
                 }
             }
         }
+
+        if (SelectedOrder != null && !SelectedOrder.IsMainOrder)
+        {
+            var executors = await _directoryRepository.GetCounterpartiesAsync(true);
+            var clients = await _directoryRepository.GetCounterpartiesAsync(false);
+            var services = await _directoryRepository.GetServicesAsync();
+
+            AdditionalOrderDialog dialog = new();
+
+            var order = await _repo.GetByIdAsync(SelectedOrder.Id);
+            var parrentOrder = await _repo.GetByIdAsync(order!.ParentId!.Value);
+
+            if (order != null && dialog.ShowDialog(order, executors, clients, services, out OrderDTO? result))
+            {
+                if (result != null)
+                {
+                    await _repo.UpdateAsync(result);
+
+                    // Обновляем запись в полной коллекции и фильтруем
+                    var index = Orders.IndexOf(SelectedOrder);
+                    if (index >= 0)
+                    {
+                        Orders[index] = _mapper.Map<OrderShortInfo>(result);
+                    }
+
+                    ApplyFilter();
+                }
+            }
+        }
     }
 
     private async Task DeleteOrderAsync()
     {
         if (SelectedOrder != null)
         {
-            var result = MessageBox.Show("Вы действительно хотите удалить выбранный договор?", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var type = SelectedOrder.IsMainOrder ? "выбранный договор" : "выбранное ДС";
+            var result = MessageBox.Show($"Вы действительно хотите удалить {type}?", "Подтверждение удаления", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
                 await _repo.DeleteAsync(SelectedOrder.Id);

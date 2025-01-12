@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
@@ -28,9 +29,12 @@ namespace USProApplication.Views.Modals
             DialogResult = true;
         }
 
-        public bool ShowDialog(OrderDTO order, ICollection<ServiceItem> services, out OrderDTO? result)
+        public bool ShowDialog(OrderDTO order, ICollection<DictionaryItem> executors, ICollection<DictionaryItem> clients, ICollection<ServiceItem> services, out OrderDTO? result)
         {
             var viewModel = (OrderDialogViewModel)DataContext;
+
+            viewModel.Executors = new ObservableCollection<DictionaryItem>(executors);
+            viewModel.Customers = new ObservableCollection<DictionaryItem>(clients);
 
             viewModel.Order = order;
             viewModel.PriceToMeter = order.PriceToMeter ?? 0;
