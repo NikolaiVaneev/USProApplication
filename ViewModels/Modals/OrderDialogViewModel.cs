@@ -142,6 +142,13 @@ public class OrderDialogViewModel(IDocCreator docCreator) : ReactiveObject
     private AsyncCommand? _createUPDCommand;
     public AsyncCommand CreateUPDCommand => _createUPDCommand ??= new AsyncCommand(async () =>
     {
-        await docCreator.CreateUPDAsync(Order!, NeedStamp);
+        try
+        {
+            await docCreator.CreateUPDAsync(Order!, NeedStamp);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Ошибка создания документа", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }, () => Order!.CustomerId != null && Order!.ExecutorId != null);
 }

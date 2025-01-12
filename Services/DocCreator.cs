@@ -1,4 +1,5 @@
-﻿using Spire.Doc;
+﻿using OfficeOpenXml;
+using Spire.Doc;
 using Spire.Doc.Documents;
 using System.IO;
 using USProApplication.DataBase.Entities;
@@ -10,7 +11,6 @@ namespace USProApplication.Services
 {
     public class DocCreator(ICounterpartyRepository counterpartyRepository) : IDocCreator
     {
-        
         public async Task CreateActAsync(OrderDTO order, bool stamp)
         {
             string templatePath = Path.Combine("Templates", "Act.docx");
@@ -94,11 +94,69 @@ namespace USProApplication.Services
             throw new NotImplementedException();
         }
 
-        public Task CreateUPDAsync(OrderDTO order, bool stamp)
+        public async Task CreateUPDAsync(OrderDTO order, bool stamp)
         {
-            throw new NotImplementedException();
+            string templatePath = Path.Combine("Templates", "UPD.xlsx");
+            string outputPath = Path.Combine(Path.GetTempPath(), $"УПД {order.Number!.Replace('/', '_')}-{order.Name}.xlsx");
+
+            FileInfo fileInfo = new(templatePath);
+
+            using ExcelPackage package = new(fileInfo);
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
+
+            // Заполнение данных
+            worksheet.Cells["Y1"].Value = $"{DateConverter.ConvertDateToString(DateTime.Now)} г.";
+            worksheet.Cells["BF15"].Value = order.Price;
+            worksheet.Cells["O31"].Value = $"{DateConverter.ConvertDateToString(order.СompletionDate)} года";
+            worksheet.Cells["J15"].Value = $"Оказание услуг по разработке проектной документации согласно договору №USР-{order.Number} от {order.StartDate:dd.MM.yyyy} г. {order.Name}";
+            worksheet.Cells["T22"].Value = $"USР-{order.Number} от {order.StartDate:dd.MM.yyyy} г.";
+
+            if (order.UsingNDS && order.NDS > 0)
+            {
+                worksheet.Cells["AZ15"].Value = $"{order.NDS}%";
+
+                var tax = Math.Round((decimal)order.Price! * order.NDS / (100 + order.NDS), 2);
+                worksheet.Cells["BB15"].Value = tax;
+            }
+
+            var client = await counterpartyRepository.GetByIdAsync((Guid)order.CustomerId!);
+            if (client != null)
+            {
+                worksheet.Cells["BE4"].Value = client.Name;
+                worksheet.Cells["BE5"].Value = client.Address;
+                worksheet.Cells["BE6"].Value = $"{client.INN}/{client.KPP}";
+                worksheet.Cells["AS40"].Value = $"{client.Name}, ИНН/КПП {client.INN}/{client.KPP}";
+            }
+
+            var executor = await counterpartyRepository.GetByIdAsync((Guid)order.ExecutorId!);
+            if (executor != null)
+            {
+                worksheet.Cells["R4"].Value = executor.Name;
+                worksheet.Cells["R5"].Value = executor.Address;
+                worksheet.Cells["R6"].Value = $"{executor.INN}/{executor.KPP}";
+                worksheet.Cells["C40"].Value = $"{executor.Name}, ИНН/КПП {executor.INN}/{executor.KPP}";
+            }
+
+            // Сохранение документа
+            try
+            {
+                FileInfo outputFile = new(outputPath);
+                package.SaveAs(outputFile);
+
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(outputPath) { UseShellExecute = true });
+            }
+            catch (Exception)
+            {
+                throw new Exception("Невозможно сохранить УПД. Вероятно, он уже открыт. Закройте документ и попробуйте снова");
+            }
         }
 
+        /// <summary>
+        /// Получить описание НДС
+        /// </summary>
+        /// <param name="order"></param>
+        /// <returns></returns>
         private static string GetNDSDescription(OrderDTO order)
         {
             string notNDS = "НДС не облагается (Уведомление о возможности применения УСН № 2490 от 03.12.2007 г.)";
@@ -150,30 +208,15 @@ namespace USProApplication.Services
                 return string.Empty;
             }
 
-            if (nominative)
+            return directorPosition switch
             {
-                return directorPosition switch
-                {
-                    DirectorPositions.Director => "Директор ",
-                    DirectorPositions.GeneralDirector => "Генеральный директор ",
-                    DirectorPositions.Manager => "Управляющий ",
-                    DirectorPositions.Chief => "Начальник ",
-                    DirectorPositions.None => string.Empty,
-                    _ => throw new NotImplementedException()
-                };
-            }
-            else
-            {
-                return directorPosition switch
-                {
-                    DirectorPositions.Director => "Директора ",
-                    DirectorPositions.GeneralDirector => "Генерального директора ",
-                    DirectorPositions.Manager => "Управляющего ",
-                    DirectorPositions.Chief => "Начальника ",
-                    DirectorPositions.None => string.Empty,
-                    _ => throw new NotImplementedException()
-                };
-            }
+                DirectorPositions.Director => nominative ? "Директор " : "Директора ",
+                DirectorPositions.GeneralDirector => nominative ? "Генеральный директор " : "Генерального директора ",
+                DirectorPositions.Manager => nominative ? "Управляющий " : "Управляющего ",
+                DirectorPositions.Chief => nominative ? "Начальник " : "Начальника ",
+                DirectorPositions.None => string.Empty,
+                _ => throw new NotImplementedException()
+            };
         }
 
     }
