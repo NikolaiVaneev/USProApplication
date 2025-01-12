@@ -220,11 +220,43 @@ namespace USProApplication.Services
 
             doc.Replace("{Contract}", $"{order.Number} от {order.StartDate:dd.MM.yyyy} г.", true, true);
             doc.Replace("{Number}", number, true, true);
-            doc.Replace("{Object}", order.Name, true, true);
+            
             doc.Replace("{Price}", string.Format("{0:N2}", price), true, true);
             doc.Replace("{FullPrice}", DecimalConverter.ConvertDecimalToString(price), true, true);
             doc.Replace("{PayType}", billType, true, true);
 
+            CounterpartyDTO? executor;
+            CounterpartyDTO? client;
+            if (order.ParentId == null)
+            {
+                doc.Replace("{Object}", order.Name, true, true);
+                doc.Replace("{AdditionalOrder}", string.Empty, true, true);
+
+                client = await counterpartyRepository.GetByIdAsync((Guid)order.CustomerId!);
+                executor = await counterpartyRepository.GetByIdAsync((Guid)order.ExecutorId!);
+            }
+            else
+            {
+                doc.Replace("{Object}", order.ParentOrder!.Name, true, true);
+                doc.Replace("{AdditionalOrder}", $"доп. соглашению № {order.Number} от {order.StartDate:dd.MM.yyyy} по ", true, true);
+
+                client = await counterpartyRepository.GetByIdAsync((Guid)order.ParentOrder!.CustomerId!);
+                executor = await counterpartyRepository.GetByIdAsync((Guid)order.ParentOrder!.ExecutorId!);
+            }
+
+            var morpherService = new MorpherService();
+
+            doc.Replace("{Client}", $"{client!.Name}, ИНН {client.INN}, КПП {client.KPP}, {client.Address}", true, true);
+            doc.Replace("{Bank}", executor!.Bank, true, true);
+            doc.Replace("{BIK}", executor.BIK, true, true);
+            doc.Replace("{INN}", executor.INN, true, true);
+            doc.Replace("{KPP}", executor.KPP, true, true);
+            doc.Replace("{CorrAccount}", executor.CorrAccount, true, true);
+            doc.Replace("{Account}", executor.PaymentAccount, true, true);
+
+            doc.Replace("{Recipient}", executor.Name, true, true);
+            doc.Replace("{Executor}", $"{executor.Name}, ИНН {executor.INN}, КПП {executor.KPP}, {executor.Address}", true, true);
+            doc.Replace("{ExecutorShortName}", await morpherService.GetShortNameAsync(executor.Director, MorpherService.RussianCase.Nominative), true, true);
 
             if (order.UsingNDS && order.NDS > 0)
             {
@@ -236,29 +268,6 @@ namespace USProApplication.Services
             {
                 doc.Replace("{NDSType}", "Без налога(НДС)", true, true);
                 doc.Replace("{NDS}", "-", true, true);
-            }
-
-            var client = await counterpartyRepository.GetByIdAsync((Guid)order.CustomerId!);
-            if (client != null)
-            {
-                doc.Replace("{Client}", $"{client.Name}, ИНН {client.INN}, КПП {client.KPP}, {client.Address}", true, true);
-            }
-
-            var executor = await counterpartyRepository.GetByIdAsync((Guid)order.ExecutorId!);
-            if (executor != null)
-            {
-                var morpherService = new MorpherService();
-
-                doc.Replace("{Bank}", executor.Bank, true, true);
-                doc.Replace("{BIK}", executor.BIK, true, true);
-                doc.Replace("{INN}", executor.INN, true, true);
-                doc.Replace("{KPP}", executor.KPP, true, true);
-                doc.Replace("{CorrAccount}", executor.CorrAccount, true, true);
-                doc.Replace("{Account}", executor.PaymentAccount, true, true);
-
-                doc.Replace("{Recipient}", executor.Name, true, true);
-                doc.Replace("{Executor}", $"{executor.Name}, ИНН {executor.INN}, КПП {executor.KPP}, {executor.Address}", true, true);
-                doc.Replace("{ExecutorShortName}", await morpherService.GetShortNameAsync(executor.Director, MorpherService.RussianCase.Nominative), true, true);
             }
 
             try
