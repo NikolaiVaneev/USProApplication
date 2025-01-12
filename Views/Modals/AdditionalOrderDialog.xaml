@@ -9,7 +9,7 @@
         WindowStyle="ThreeDBorderWindow"
         xmlns:vm="clr-namespace:USProApplication.ViewModels.Modals"
         ResizeMode="NoResize"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="CenterScreen" Closing="Window_Closing"
         Title="{Binding Order.ParentOrder.Number, StringFormat='Дополнительное соглашение к договору {0}'}" SizeToContent="Height" Width="600">
     
     <Grid>
@@ -151,10 +151,9 @@
                     <materialDesign:Card Padding="4" Margin="7">
                         <StackPanel Orientation="Horizontal">
                             <DockPanel Width="110" HorizontalAlignment="Left" Margin="4 0 0 0">
-                                <CheckBox Content="НДС, %" IsChecked="{Binding Order.UsingNDS, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                <TextBox IsEnabled="{Binding Order.UsingNDS}" MaxLength="2" Margin="5 0 0 0" Text="{Binding Order.NDS, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 HorizontalContentAlignment="Center" FontSize="14"
-                                 PreviewTextInput="TextBox_PreviewTextInput"/>
+                                <CheckBox Content="НДС, %" IsChecked="{Binding Order.ParentOrder.UsingNDS}" IsEnabled="False"/>
+                                <TextBox MaxLength="2" Margin="5 0 0 0" Text="{Binding Order.NDS}" IsEnabled="False"
+                                 HorizontalContentAlignment="Center" FontSize="14"/>
                             </DockPanel>
                             <StackPanel Orientation="Horizontal" Margin="8 0 0 0">
                                 <TextBlock Text="Цена за кв.м." FontSize="14" VerticalAlignment="Bottom"/>
@@ -203,19 +202,6 @@
                                          FontSize="14"/>
                                 <TextBlock Text="от" Margin="8 0" FontSize="14" VerticalAlignment="Bottom"/>
                                 <DatePicker Width="120" SelectedDate="{Binding Order.ExecutionBillDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="4 0 0 0">
-                                <TextBlock Text="Согласование, %"/>
-                                <TextBox MaxLength="3" Margin="5 0 0 0" Text="{Binding Order.ApprovalPercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    HorizontalContentAlignment="Center" FontSize="14" Width="50"
-                                 PreviewTextInput="TextBox_PreviewTextInput"/>
-                                <TextBlock Text="Счет №" FontSize="14" Margin="20 0 0 0" VerticalAlignment="Bottom"/>
-                                <TextBox VerticalAlignment="Bottom" Margin="6 0 0 0" Width="130" 
-                                         HorizontalContentAlignment="Center"
-                                         Text="{Binding Order.ApprovalBillNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         FontSize="14"/>
-                                <TextBlock Text="от" Margin="8 0" FontSize="14" VerticalAlignment="Bottom"/>
-                                <DatePicker Width="120" SelectedDate="{Binding Order.ApprovalBillDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
                         </StackPanel>
                     </materialDesign:Card>

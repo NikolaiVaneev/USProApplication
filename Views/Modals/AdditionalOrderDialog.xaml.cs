@@ -24,7 +24,6 @@ namespace USProApplication.Views.Modals
 
         private void Save(OrderDTO? order)
         {
-            ((OrderDialogViewModel)DataContext).OnSave -= Save;
             _order = order;
             DialogResult = true;
         }
@@ -68,6 +67,11 @@ namespace USProApplication.Views.Modals
                     e.Handled = _regex.IsMatch(clipboardText);
                 }
             }
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            ((OrderDialogViewModel)DataContext).OnSave -= Save;
         }
     }
 }

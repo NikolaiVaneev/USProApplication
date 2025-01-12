@@ -9,7 +9,7 @@
         WindowStyle="ThreeDBorderWindow"
         xmlns:vm="clr-namespace:USProApplication.ViewModels.Modals"
         ResizeMode="NoResize"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="CenterScreen" Closing="Window_Closing"
         Title="Информация об услуге" SizeToContent="Height" Width="600">
 
     <Window.DataContext>

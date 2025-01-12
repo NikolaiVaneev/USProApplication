@@ -22,7 +22,7 @@ namespace USProApplication.Views.Modals
 
         private void Save(CounterpartyDTO? service)
         {
-            ((CounterpartyDialogViewModel)DataContext).OnSave -= Save;
+
             _service = service;
             DialogResult = true;
         }
@@ -58,6 +58,11 @@ namespace USProApplication.Views.Modals
                     e.Handled = _regex.IsMatch(clipboardText);
                 }
             }
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            ((CounterpartyDialogViewModel)DataContext).OnSave -= Save;
         }
     }
 }

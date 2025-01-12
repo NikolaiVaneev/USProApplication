@@ -72,4 +72,9 @@ public partial class OrderDialog : Window
             }
         }
     }
+
+    private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+    {
+        ((OrderDialogViewModel)DataContext).OnSave -= Save;
+    }
 }
