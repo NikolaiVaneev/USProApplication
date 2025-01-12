@@ -1,7 +1,6 @@
 ﻿using OfficeOpenXml;
 using Spire.Doc;
 using Spire.Doc.Documents;
-using System.CodeDom.Compiler;
 using System.IO;
 using USProApplication.DataBase.Entities;
 using USProApplication.Models;
@@ -15,7 +14,7 @@ namespace USProApplication.Services
         public async Task CreateActAsync(OrderDTO order, bool stamp)
         {
             string templatePath = Path.Combine("Templates", "Act.docx");
-            string outputPath = Path.Combine(Path.GetTempPath(), $"Акт {order.Number!.Replace('/', '_')}-{order.Name}.docx");
+            string outputPath;
 
             Document doc = new();
             try
@@ -29,33 +28,46 @@ namespace USProApplication.Services
 
             if (!stamp) RemoveImages(doc);
 
+
+            CounterpartyDTO? executor;
+            CounterpartyDTO? client;
+
+            if (order.ParentId == null)
+            {
+                outputPath = Path.Combine(Path.GetTempPath(), $"Акт {order.Number!.Replace('/', '_')}-{order.Name}.docx");
+                client = await counterpartyRepository.GetByIdAsync((Guid)order.CustomerId!);
+                executor = await counterpartyRepository.GetByIdAsync((Guid)order.ExecutorId!);
+
+                doc.Replace("{Address}", order.Address, true, true);
+                doc.Replace("{NDS}", GetNDSDescription(order), true, true);
+            }
+            else
+            {
+                outputPath = Path.Combine(Path.GetTempPath(), $"Акт ДС {order.Number!.Replace('/', '_')}-{order.Name}.docx");
+                client = await counterpartyRepository.GetByIdAsync((Guid)order.ParentOrder!.CustomerId!);
+                executor = await counterpartyRepository.GetByIdAsync((Guid)order.ParentOrder!.ExecutorId!);
+
+                doc.Replace("{Address}", order.ParentOrder.Address, true, true);
+                doc.Replace("{NDS}", GetNDSDescription(order.ParentOrder), true, true);
+            }
+
             doc.Replace("{ContractNumber}", order.Number, true, true);
             doc.Replace("{ContractDate}", DateConverter.ConvertDateToString(order.StartDate), true, true);
             doc.Replace("{Date}", DateConverter.ConvertDateToString(order.СompletionDate), true, true);
-            doc.Replace("{Address}", order.Address, true, true);
             doc.Replace("{Price}", string.Format("{0:N2}", order.Price), true, true);
             doc.Replace("{FullPrice}", DecimalConverter.ConvertDecimalToString(order.Price), true, true);
-            doc.Replace("{NDS}", GetNDSDescription(order), true, true);
 
             var morpherService = new MorpherService();
 
-            var client = await counterpartyRepository.GetByIdAsync((Guid)order.CustomerId!);
-            if (client != null)
-            {
-                doc.Replace("{ClientOrg}", client.Name, true, true);
-                doc.Replace("{ClientFullName}", await morpherService.GetDeclensionAsync(client.Director, MorpherService.RussianCase.Accusative), true, true);
-                doc.Replace("{ClientPosition}", GetDirectorPosition(client.DirectorPosition, false), true, true);
-                doc.Replace("{ClientShortName}", await morpherService.GetShortNameAsync(client.Director, MorpherService.RussianCase.Nominative), true, true);
-            }
+            doc.Replace("{ClientOrg}", client!.Name, true, true);
+            doc.Replace("{ClientFullName}", await morpherService.GetDeclensionAsync(client.Director, MorpherService.RussianCase.Accusative), true, true);
+            doc.Replace("{ClientPosition}", GetDirectorPosition(client.DirectorPosition, false), true, true);
+            doc.Replace("{ClientShortName}", await morpherService.GetShortNameAsync(client.Director, MorpherService.RussianCase.Nominative), true, true);
 
-            var executor = await counterpartyRepository.GetByIdAsync((Guid)order.ExecutorId!);
-            if (executor != null)
-            {
-                doc.Replace("{ExecutorOrg}", executor.Name, true, true);
-                doc.Replace("{ExecutorFullName}", await morpherService.GetDeclensionAsync(executor.Director, MorpherService.RussianCase.Accusative), true, true);
-                doc.Replace("{ExecutorPosition}", GetDirectorPosition(executor.DirectorPosition, false), true, true);
-                doc.Replace("{ExecutorShortName}", await morpherService.GetShortNameAsync(executor.Director, MorpherService.RussianCase.Nominative), true, true);
-            }
+            doc.Replace("{ExecutorOrg}", executor!.Name, true, true);
+            doc.Replace("{ExecutorFullName}", await morpherService.GetDeclensionAsync(executor.Director, MorpherService.RussianCase.Accusative), true, true);
+            doc.Replace("{ExecutorPosition}", GetDirectorPosition(executor.DirectorPosition, false), true, true);
+            doc.Replace("{ExecutorShortName}", await morpherService.GetShortNameAsync(executor.Director, MorpherService.RussianCase.Nominative), true, true);
 
             try
             {
@@ -220,7 +232,7 @@ namespace USProApplication.Services
 
             doc.Replace("{Contract}", $"{order.Number} от {order.StartDate:dd.MM.yyyy} г.", true, true);
             doc.Replace("{Number}", number, true, true);
-            
+
             doc.Replace("{Price}", string.Format("{0:N2}", price), true, true);
             doc.Replace("{FullPrice}", DecimalConverter.ConvertDecimalToString(price), true, true);
             doc.Replace("{PayType}", billType, true, true);
@@ -232,6 +244,18 @@ namespace USProApplication.Services
                 doc.Replace("{Object}", order.Name, true, true);
                 doc.Replace("{AdditionalOrder}", string.Empty, true, true);
 
+                if (order.UsingNDS && order.NDS > 0)
+                {
+                    var tax = Math.Round(price! * order.NDS / (100 + order.NDS), 2);
+                    doc.Replace("{NDSType}", "В том числе НДС:", true, true);
+                    doc.Replace("{NDS}", string.Format("{0:N2}", tax), true, true);
+                }
+                else
+                {
+                    doc.Replace("{NDSType}", "Без налога(НДС)", true, true);
+                    doc.Replace("{NDS}", "-", true, true);
+                }
+
                 client = await counterpartyRepository.GetByIdAsync((Guid)order.CustomerId!);
                 executor = await counterpartyRepository.GetByIdAsync((Guid)order.ExecutorId!);
             }
@@ -239,6 +263,18 @@ namespace USProApplication.Services
             {
                 doc.Replace("{Object}", order.ParentOrder!.Name, true, true);
                 doc.Replace("{AdditionalOrder}", $"доп. соглашению № {order.Number} от {order.StartDate:dd.MM.yyyy} по ", true, true);
+
+                if (order.ParentOrder!.UsingNDS && order.ParentOrder!.NDS > 0)
+                {
+                    var tax = Math.Round(price! * order.ParentOrder!.NDS / (100 + order.ParentOrder!.NDS), 2);
+                    doc.Replace("{NDSType}", "В том числе НДС:", true, true);
+                    doc.Replace("{NDS}", string.Format("{0:N2}", tax), true, true);
+                }
+                else
+                {
+                    doc.Replace("{NDSType}", "Без налога(НДС)", true, true);
+                    doc.Replace("{NDS}", "-", true, true);
+                }
 
                 client = await counterpartyRepository.GetByIdAsync((Guid)order.ParentOrder!.CustomerId!);
                 executor = await counterpartyRepository.GetByIdAsync((Guid)order.ParentOrder!.ExecutorId!);
@@ -258,17 +294,7 @@ namespace USProApplication.Services
             doc.Replace("{Executor}", $"{executor.Name}, ИНН {executor.INN}, КПП {executor.KPP}, {executor.Address}", true, true);
             doc.Replace("{ExecutorShortName}", await morpherService.GetShortNameAsync(executor.Director, MorpherService.RussianCase.Nominative), true, true);
 
-            if (order.UsingNDS && order.NDS > 0)
-            {
-                var tax = Math.Round(price! * order.NDS / (100 + order.NDS), 2);
-                doc.Replace("{NDSType}", "В том числе НДС:", true, true);
-                doc.Replace("{NDS}", string.Format("{0:N2}", tax), true, true);
-            }
-            else
-            {
-                doc.Replace("{NDSType}", "Без налога(НДС)", true, true);
-                doc.Replace("{NDS}", "-", true, true);
-            }
+
 
             try
             {
@@ -296,13 +322,7 @@ namespace USProApplication.Services
             worksheet.Cells["BF15"].Value = order.Price;
             worksheet.Cells["O31"].Value = $"{DateConverter.ConvertDateToString(order.СompletionDate)} года";
 
-            if (order.UsingNDS && order.NDS > 0)
-            {
-                worksheet.Cells["AZ15"].Value = $"{order.NDS}%";
 
-                var tax = Math.Round((decimal)order.Price! * order.NDS / (100 + order.NDS), 2);
-                worksheet.Cells["BB15"].Value = tax;
-            }
 
             CounterpartyDTO client = new();
             CounterpartyDTO executor = new();
@@ -310,6 +330,14 @@ namespace USProApplication.Services
             if (order.ParentId == null)
             {
                 outputPath = Path.Combine(Path.GetTempPath(), $"УПД {order.Number!.Replace('/', '_')}-{order.Name}.xlsx");
+
+                if (order.UsingNDS && order.NDS > 0)
+                {
+                    worksheet.Cells["AZ15"].Value = $"{order.NDS}%";
+
+                    var tax = Math.Round((decimal)order.Price! * order.NDS / (100 + order.NDS), 2);
+                    worksheet.Cells["BB15"].Value = tax;
+                }
 
                 worksheet.Cells["J15"].Value = $"Оказание услуг по разработке проектной документации согласно договору №USР-{order.Number} от {order.StartDate:dd.MM.yyyy} г. {order.Name}";
                 worksheet.Cells["T22"].Value = $"USР-{order.Number} от {order.StartDate:dd.MM.yyyy} г.";
@@ -321,6 +349,14 @@ namespace USProApplication.Services
             else
             {
                 outputPath = Path.Combine(Path.GetTempPath(), $"УПД ДС {order.Number!.Replace('/', '_')}-{order.Name}.xlsx");
+
+                if (order.ParentOrder!.UsingNDS && order.ParentOrder!.NDS > 0)
+                {
+                    worksheet.Cells["AZ15"].Value = $"{order.ParentOrder!.NDS}%";
+
+                    var tax = Math.Round((decimal)order.Price! * order.ParentOrder!.NDS / (100 + order.ParentOrder!.NDS), 2);
+                    worksheet.Cells["BB15"].Value = tax;
+                }
 
                 worksheet.Cells["J15"].Value = $"Оказание услуг по разработке проектной документации согласно доп. соглашению №{order.Number} от {order.StartDate:dd.MM.yyyy} г. по дог. №USР-{order.ParentOrder!.Number} от {order.ParentOrder!.StartDate:dd.MM.yyyy} г. {order.Name}";
                 worksheet.Cells["T22"].Value = $"ДС {order.Number} от {order.StartDate:dd.MM.yyyy} к USР-{order.ParentOrder!.Number} от {order.ParentOrder!.StartDate:dd.MM.yyyy}";
@@ -483,6 +519,5 @@ namespace USProApplication.Services
                 _ => throw new NotImplementedException()
             };
         }
-
     }
 }

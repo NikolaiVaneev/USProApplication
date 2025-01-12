@@ -152,7 +152,7 @@
                         <StackPanel Orientation="Horizontal">
                             <DockPanel Width="110" HorizontalAlignment="Left" Margin="4 0 0 0">
                                 <CheckBox Content="НДС, %" IsChecked="{Binding Order.ParentOrder.UsingNDS}" IsEnabled="False"/>
-                                <TextBox MaxLength="2" Margin="5 0 0 0" Text="{Binding Order.NDS}" IsEnabled="False"
+                                <TextBox MaxLength="2" Margin="5 0 0 0" Text="{Binding Order.ParentOrder.NDS}" IsEnabled="False"
                                  HorizontalContentAlignment="Center" FontSize="14"/>
                             </DockPanel>
                             <StackPanel Orientation="Horizontal" Margin="8 0 0 0">

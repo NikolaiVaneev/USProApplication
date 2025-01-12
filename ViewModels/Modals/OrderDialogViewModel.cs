@@ -173,7 +173,10 @@ public class OrderDialogViewModel(IDocCreator docCreator) : ReactiveObject
             MessageBox.Show(ex.Message, "Ошибка создания документа", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
         
-    }, () => Order!.CustomerId != null && Order!.ExecutorId != null && !string.IsNullOrWhiteSpace(Order!.Address) && !string.IsNullOrWhiteSpace(Order!.Number) && Order.IsCompleted && Order.СompletionDate != null);
+    }, () => ((Order!.ParentId == null && Order!.CustomerId != null && Order!.ExecutorId != null) || Order!.ParentId != null)
+            && !string.IsNullOrWhiteSpace(Order.Number)
+            && Order.StartDate != null
+            && Order.СompletionDate != null);
 
     private AsyncCommand? _createUPDCommand;
     public AsyncCommand CreateUPDCommand => _createUPDCommand ??= new AsyncCommand(async () =>
