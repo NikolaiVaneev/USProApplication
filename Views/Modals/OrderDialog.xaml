@@ -12,10 +12,6 @@
         WindowStartupLocation="CenterScreen"
         Title="Информация о заказе" SizeToContent="Height" Width="600">
 
-    <Window.DataContext>
-        <vm:OrderDialogViewModel/>
-    </Window.DataContext>
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -234,22 +230,26 @@
             </TabItem>
         </TabControl>
 
-        <materialDesign:PopupBox StaysOpen="False" Grid.Row="3" Margin="5">
-            <materialDesign:PopupBox.ToggleContent>
-                <materialDesign:PackIcon Kind="FileWordOutline" Width="30" Height="30" Foreground="#FF198FDC"/>
-            </materialDesign:PopupBox.ToggleContent>
-            <Menu Margin="5 0">
-                <MenuItem Header="Договор"/>
-                <MenuItem Header="Счет">
-                    <MenuItem Header="Предоплата"/>
-                    <MenuItem Header="Выполнение"/>
-                    <MenuItem Header="Согласование"/>
-                </MenuItem>
-                <MenuItem Header="Договор-счет"/>
-                <MenuItem Header="Акт"/>
-                <MenuItem Header="УПД"/>
-            </Menu>
-        </materialDesign:PopupBox>
+        <StackPanel Orientation="Horizontal" Grid.Row="3">
+            <materialDesign:PopupBox StaysOpen="False" Margin="5">
+                <materialDesign:PopupBox.ToggleContent>
+                    <materialDesign:PackIcon Kind="FileWordOutline" Width="30" Height="30" Foreground="#FF198FDC"/>
+                </materialDesign:PopupBox.ToggleContent>
+                <Menu Margin="5 0">
+                    <MenuItem Header="Договор" Command="{Binding CreateContractCommand}"/>
+                    <MenuItem Header="Счет">
+                        <MenuItem Header="Предоплата" Command="{Binding CreatePrepaymentInvoiceCommand}"/>
+                        <MenuItem Header="Выполнение" Command="{Binding CreateExecutionInvoiceCommand}"/>
+                        <MenuItem Header="Согласование" Command="{Binding CreateApprovalInvoiceCommand}"/>
+                    </MenuItem>
+                    <MenuItem Header="Договор-счет" Command="{Binding CreateContractInvoiceCommand}"/>
+                    <MenuItem Header="Акт" Command="{Binding CreateActCommand}"/>
+                    <MenuItem Header="УПД" Command="{Binding CreateUPDCommand}"/>
+                </Menu>
+            </materialDesign:PopupBox>
+            <CheckBox Content="Штамп" ToolTip="Ставить печать и подпись на документах" IsChecked="{Binding NeedStamp, Mode=TwoWay}"/>
+        </StackPanel>
+
 
 
         <Button Grid.Row="2" Content="Cохранить" Margin="5" Width="175" TabIndex="4"

@@ -1,8 +1,10 @@
-﻿using System.Collections.ObjectModel;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using USProApplication.Models;
+using USProApplication.ViewModels;
 using USProApplication.ViewModels.Modals;
 
 namespace USProApplication.Views.Modals;
@@ -17,6 +19,8 @@ public partial class OrderDialog : Window
     public OrderDialog()
     {
         InitializeComponent();
+        DataContext = App.ServiceProvider?.GetService<OrderDialogViewModel>()
+              ?? throw new InvalidOperationException("Не удалось получить экземпляр OrderDialogViewModel.");
         ((OrderDialogViewModel)DataContext).OnSave += Save;
     }
 

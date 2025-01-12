@@ -8,7 +8,9 @@ using USProApplication.DataBase.Mappings;
 using USProApplication.DataBase.Repository;
 using USProApplication.Models;
 using USProApplication.Models.Repositories;
+using USProApplication.Services;
 using USProApplication.ViewModels;
+using USProApplication.ViewModels.Modals;
 
 namespace USProApplication;
 
@@ -45,6 +47,9 @@ public partial class App : Application
         services.AddScoped<ServicesViewModel>();
         services.AddScoped<CustomersViewModel>();
         services.AddScoped<OrdersViewModel>();
+        services.AddScoped<OrderDialogViewModel>();
+
+        services.AddScoped<IDocCreator, DocCreator>();
     }
 
     protected override void OnStartup(StartupEventArgs e)

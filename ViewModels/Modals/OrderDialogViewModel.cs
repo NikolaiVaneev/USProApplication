@@ -1,12 +1,14 @@
 ﻿using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.Collections.ObjectModel;
+using System.Data;
+using System.Windows;
 using USProApplication.Models;
 using USProApplication.Utils;
 
 namespace USProApplication.ViewModels.Modals;
 
-public class OrderDialogViewModel : ReactiveObject
+public class OrderDialogViewModel(IDocCreator docCreator) : ReactiveObject
 {
     [Reactive] public OrderDTO? Order { get; set; }
     [Reactive] public ICollection<DictionaryItem>? Executors { get; set; }
@@ -17,12 +19,14 @@ public class OrderDialogViewModel : ReactiveObject
     [Reactive] public decimal TotalPrice { get; set; } = 0.0m;
     [Reactive] public decimal PriceToMeter { get; set; } = 0.0m;
 
+    [Reactive] public bool NeedStamp { get; set; } = true;
+
     public event Action<OrderDTO?>? OnSave;
 
     private DelegateCommand? apply;
     public DelegateCommand Apply => apply ??= new DelegateCommand(() =>
     {
-        Order.SelectedServicesIds = Services?
+        Order!.SelectedServicesIds = Services?
             .Where(s => s.IsChecked)
             .Select(s => s.Id)
             .ToList();
@@ -55,7 +59,6 @@ public class OrderDialogViewModel : ReactiveObject
     }
 
     private DelegateCommand? calculatePrice;
-
     public DelegateCommand CalculatePrice => calculatePrice ??= new DelegateCommand(() =>
     {
         if (Order == null) return;
@@ -91,4 +94,54 @@ public class OrderDialogViewModel : ReactiveObject
     {
         SelectedServicesCount = Services?.Count(s => s.IsChecked) ?? 0;
     }
+
+    private AsyncCommand? _createContractCommand;
+    public AsyncCommand CreateContractCommand => _createContractCommand ??= new AsyncCommand(async () =>
+    {
+        await docCreator.CreateContractAsync(Order!, NeedStamp);
+    }, () => !string.IsNullOrWhiteSpace(Order?.Name));
+
+    private AsyncCommand? _createPrepaymentInvoiceCommand;
+    public AsyncCommand CreatePrepaymentInvoiceCommand => _createPrepaymentInvoiceCommand ??= new AsyncCommand(async () =>
+    {
+        await docCreator.CreatePaymentInvoiceAsync(Order!, PaymentInvioceTypes.Prepayment, NeedStamp);
+    }, () => Order!.PrepaymentPercent > 0 && !string.IsNullOrWhiteSpace(Order!.PrepaymentBillNumber) && Order!.PrepaymentBillDate != null);
+
+    private AsyncCommand? _createExecutionInvoiceCommand;
+    public AsyncCommand CreateExecutionInvoiceCommand => _createExecutionInvoiceCommand ??= new AsyncCommand(async () =>
+    {
+        await docCreator.CreatePaymentInvoiceAsync(Order!, PaymentInvioceTypes.Execution, NeedStamp);
+    }, () => Order!.ExecutionPercent > 0 && !string.IsNullOrWhiteSpace(Order!.ExecutionBillNumber) && Order!.ExecutionBillDate != null);
+
+    private AsyncCommand? _createApprovalInvoiceCommand;
+    public AsyncCommand CreateApprovalInvoiceCommand => _createApprovalInvoiceCommand ??= new AsyncCommand(async () =>
+    {
+        await docCreator.CreatePaymentInvoiceAsync(Order!, PaymentInvioceTypes.Approval, NeedStamp);
+    }, () => Order!.ApprovalPercent > 0 && !string.IsNullOrWhiteSpace(Order!.ApprovalBillNumber) && Order!.ApprovalBillNumber != null);
+
+    private AsyncCommand? _createContractInvoiceCommand;
+    public AsyncCommand CreateContractInvoiceCommand => _createContractInvoiceCommand ??= new AsyncCommand(async () =>
+    {
+        await docCreator.CreateContractInvoiceAsync(Order!, NeedStamp);
+    }, () => Order!.CustomerId != null);
+
+    private AsyncCommand? _createActCommand;
+    public AsyncCommand CreateActCommand => _createActCommand ??= new AsyncCommand(async () =>
+    {
+        try
+        {
+            await docCreator.CreateActAsync(Order!, NeedStamp);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Ошибка создания документа", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        
+    }, () => Order!.CustomerId != null && Order!.ExecutorId != null && !string.IsNullOrWhiteSpace(Order!.Address) && !string.IsNullOrWhiteSpace(Order!.Number) && Order.IsCompleted && Order.СompletionDate != null);
+
+    private AsyncCommand? _createUPDCommand;
+    public AsyncCommand CreateUPDCommand => _createUPDCommand ??= new AsyncCommand(async () =>
+    {
+        await docCreator.CreateUPDAsync(Order!, NeedStamp);
+    }, () => Order!.CustomerId != null && Order!.ExecutorId != null);
 }

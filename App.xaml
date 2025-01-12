@@ -50,6 +50,13 @@
                 <Setter Property="HorizontalContentAlignment" Value="Center"/>
             </Style>
 
+            <Style TargetType="ToolTip" BasedOn="{StaticResource MaterialDesignToolTip}">
+                <Setter Property="FontFamily" Value="{StaticResource GilroyRegular}" />
+                <Setter Property="FontSize" Value="10" />
+                <Setter Property="Padding" Value="8 4" />
+
+            </Style>
+
             <ResourceDictionary.MergedDictionaries>
 
                 <materialDesign:BundledTheme BaseTheme="Light" 
