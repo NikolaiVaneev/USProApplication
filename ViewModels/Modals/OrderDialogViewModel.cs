@@ -104,25 +104,54 @@ public class OrderDialogViewModel(IDocCreator docCreator) : ReactiveObject
     private AsyncCommand? _createPrepaymentInvoiceCommand;
     public AsyncCommand CreatePrepaymentInvoiceCommand => _createPrepaymentInvoiceCommand ??= new AsyncCommand(async () =>
     {
-        await docCreator.CreatePaymentInvoiceAsync(Order!, PaymentInvioceTypes.Prepayment, NeedStamp);
+        try
+        {
+            await docCreator.CreatePaymentInvoiceAsync(Order!, PaymentInvioceTypes.Prepayment, NeedStamp);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Ошибка создания документа", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        
     }, () => Order!.PrepaymentPercent > 0 && !string.IsNullOrWhiteSpace(Order!.PrepaymentBillNumber) && Order!.PrepaymentBillDate != null);
 
     private AsyncCommand? _createExecutionInvoiceCommand;
     public AsyncCommand CreateExecutionInvoiceCommand => _createExecutionInvoiceCommand ??= new AsyncCommand(async () =>
     {
-        await docCreator.CreatePaymentInvoiceAsync(Order!, PaymentInvioceTypes.Execution, NeedStamp);
+        try
+        {
+            await docCreator.CreatePaymentInvoiceAsync(Order!, PaymentInvioceTypes.Execution, NeedStamp);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Ошибка создания документа", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }, () => Order!.ExecutionPercent > 0 && !string.IsNullOrWhiteSpace(Order!.ExecutionBillNumber) && Order!.ExecutionBillDate != null);
 
     private AsyncCommand? _createApprovalInvoiceCommand;
     public AsyncCommand CreateApprovalInvoiceCommand => _createApprovalInvoiceCommand ??= new AsyncCommand(async () =>
     {
-        await docCreator.CreatePaymentInvoiceAsync(Order!, PaymentInvioceTypes.Approval, NeedStamp);
+        try
+        {
+            await docCreator.CreatePaymentInvoiceAsync(Order!, PaymentInvioceTypes.Approval, NeedStamp);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Ошибка создания документа", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }, () => Order!.ApprovalPercent > 0 && !string.IsNullOrWhiteSpace(Order!.ApprovalBillNumber) && Order!.ApprovalBillNumber != null);
 
     private AsyncCommand? _createContractInvoiceCommand;
     public AsyncCommand CreateContractInvoiceCommand => _createContractInvoiceCommand ??= new AsyncCommand(async () =>
     {
-        await docCreator.CreateContractInvoiceAsync(Order!, NeedStamp);
+        try
+        {
+            await docCreator.CreateContractInvoiceAsync(Order!, NeedStamp);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Ошибка создания документа", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }, () => Order!.CustomerId != null);
 
     private AsyncCommand? _createActCommand;
@@ -150,5 +179,5 @@ public class OrderDialogViewModel(IDocCreator docCreator) : ReactiveObject
         {
             MessageBox.Show(ex.Message, "Ошибка создания документа", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
-    }, () => Order!.CustomerId != null && Order!.ExecutorId != null);
+    }, () => Order!.CustomerId != null && Order!.ExecutorId != null && !string.IsNullOrWhiteSpace(Order.Number) && Order.StartDate != null && Order.СompletionDate != null);
 }

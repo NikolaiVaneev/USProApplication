@@ -17,7 +17,14 @@ namespace USProApplication.Services
             string outputPath = Path.Combine(Path.GetTempPath(), $"Акт {order.Number!.Replace('/', '_')}-{order.Name}.docx");
 
             Document doc = new();
-            doc.LoadFromFile(templatePath);
+            try
+            {
+                doc.LoadFromFile(templatePath);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Невозможно открыть шаблон документа. Вероятно, он отсутствует в папке Templates.");
+            }
 
             if (!stamp) RemoveImages(doc);
 
@@ -37,7 +44,6 @@ namespace USProApplication.Services
                 doc.Replace("{ClientOrg}", client.Name, true, true);
                 doc.Replace("{ClientFullName}", await morpherService.GetDeclensionAsync(client.Director, MorpherService.RussianCase.Accusative), true, true);
                 doc.Replace("{ClientPosition}", GetDirectorPosition(client.DirectorPosition, false), true, true);
-
                 doc.Replace("{ClientShortName}", await morpherService.GetShortNameAsync(client.Director, MorpherService.RussianCase.Nominative), true, true);
             }
 
@@ -47,7 +53,6 @@ namespace USProApplication.Services
                 doc.Replace("{ExecutorOrg}", executor.Name, true, true);
                 doc.Replace("{ExecutorFullName}", await morpherService.GetDeclensionAsync(executor.Director, MorpherService.RussianCase.Accusative), true, true);
                 doc.Replace("{ExecutorPosition}", GetDirectorPosition(executor.DirectorPosition, false), true, true);
-
                 doc.Replace("{ExecutorShortName}", await morpherService.GetShortNameAsync(executor.Director, MorpherService.RussianCase.Nominative), true, true);
             }
 
@@ -89,9 +94,100 @@ namespace USProApplication.Services
             throw new NotImplementedException();
         }
 
-        public Task CreatePaymentInvoiceAsync(OrderDTO order, PaymentInvioceTypes type, bool stamp)
+        public async Task CreatePaymentInvoiceAsync(OrderDTO order, PaymentInvioceTypes type, bool stamp)
         {
-            throw new NotImplementedException();
+            string templatePath = Path.Combine("Templates", "Bill.docx");
+            string outputPath = string.Empty;
+            string number = string.Empty;
+            decimal price = 0;
+            string billType = string.Empty;
+
+            Document doc = new();
+            try
+            {
+                doc.LoadFromFile(templatePath);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Невозможно открыть шаблон документа. Вероятно, он отсутствует в папке Templates.");
+            }
+            
+            if (!stamp) RemoveImages(doc);
+
+            switch (type)
+            {
+                case PaymentInvioceTypes.Prepayment:
+                    outputPath = Path.Combine(Path.GetTempPath(), $"Счет (предоплата) {order.PrepaymentBillNumber} от {order.PrepaymentBillDate:dd.MM.yyyy} {order.Number!.Replace('/', '_')}-{order.Name}.docx");
+                    number = $"{order.PrepaymentBillNumber} от {DateConverter.ConvertDateToString(order.PrepaymentBillDate)} г.";
+                    price = (decimal)(order.Price! * order.PrepaymentPercent! / 100);
+                    billType = $"Предоплата ({order.PrepaymentPercent}%)";
+                    break;
+                case PaymentInvioceTypes.Execution:
+                    outputPath = Path.Combine(Path.GetTempPath(), $"Счет (выполнение) {order.ExecutionBillNumber} от {order.ExecutionBillDate:dd.MM.yyyy} {order.Number!.Replace('/', '_')}-{order.Name}.docx");
+                    number = $"{order.ExecutionBillNumber} от {DateConverter.ConvertDateToString(order.ExecutionBillDate)} г.";
+                    price = (decimal)(order.Price! * order.ExecutionPercent! / 100);
+                    billType = $"Оплата ({order.ExecutionPercent}%)";
+                    break;
+                case PaymentInvioceTypes.Approval:
+                    outputPath = Path.Combine(Path.GetTempPath(), $"Счет (согласование) {order.ApprovalBillNumber} от {order.ApprovalBillNumber:dd.MM.yyyy} {order.Number!.Replace('/', '_')}-{order.Name}.docx");
+                    number = $"{order.ApprovalBillNumber} от {DateConverter.ConvertDateToString(order.ApprovalBillDate)} г.";
+                    price = (decimal)(order.Price! * order.ApprovalPercent! / 100);
+                    billType = $"Оплата ({order.ApprovalPercent}%)";
+                    break;
+            }
+
+            doc.Replace("{Contract}", $"{order.Number} от {order.StartDate:dd.MM.yyyy} г.", true, true);
+            doc.Replace("{Number}", number, true, true);
+            doc.Replace("{Object}", order.Name, true, true);
+            doc.Replace("{Price}", string.Format("{0:N2}", price), true, true);
+            doc.Replace("{FullPrice}", DecimalConverter.ConvertDecimalToString(price), true, true);
+            doc.Replace("{PayType}", billType, true, true);
+            
+
+            if (order.UsingNDS && order.NDS > 0)
+            {
+                var tax = Math.Round(price! * order.NDS / (100 + order.NDS), 2);
+                doc.Replace("{NDSType}", "В том числе НДС:", true, true);
+                doc.Replace("{NDS}", string.Format("{0:N2}", tax), true, true);
+            }
+            else
+            {
+                doc.Replace("{NDSType}", "Без налога(НДС)", true, true);
+                doc.Replace("{NDS}", "-", true, true);
+            }
+
+            var client = await counterpartyRepository.GetByIdAsync((Guid)order.CustomerId!);
+            if (client != null)
+            {
+                doc.Replace("{Client}", $"{client.Name}, ИНН {client.INN}, КПП {client.KPP}, {client.Address}", true, true);
+            }
+
+            var executor = await counterpartyRepository.GetByIdAsync((Guid)order.ExecutorId!);
+            if (executor != null)
+            {
+                var morpherService = new MorpherService();
+
+                doc.Replace("{Bank}", executor.Bank, true, true);
+                doc.Replace("{BIK}", executor.BIK, true, true);
+                doc.Replace("{INN}", executor.INN, true, true);
+                doc.Replace("{KPP}", executor.KPP, true, true);
+                doc.Replace("{CorrAccount}", executor.CorrAccount, true, true);
+                doc.Replace("{Account}", executor.PaymentAccount, true, true);
+
+                doc.Replace("{Recipient}", executor.Name, true, true);
+                doc.Replace("{Executor}", $"{executor.Name}, ИНН {executor.INN}, КПП {executor.KPP}, {executor.Address}", true, true);
+                doc.Replace("{ExecutorShortName}", await morpherService.GetShortNameAsync(executor.Director, MorpherService.RussianCase.Nominative), true, true);
+            }
+
+            try
+            {
+                doc.SaveToFile(outputPath);
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(outputPath) { UseShellExecute = true });
+            }
+            catch (Exception)
+            {
+                throw new Exception("Невозможно сохранить счёт. Вероятно, он уже открыт. Закройте документ и попробуйте снова");
+            }
         }
 
         public async Task CreateUPDAsync(OrderDTO order, bool stamp)
@@ -191,7 +287,32 @@ namespace USProApplication.Services
                         }
                     }
                 }
+
+                // Удаление изображений из таблиц
+                foreach (Table table in section.Tables)
+                {
+                    foreach (TableRow row in table.Rows)
+                    {
+                        foreach (TableCell cell in row.Cells)
+                        {
+                            for (int i = cell.Paragraphs.Count - 1; i >= 0; i--)
+                            {
+                                Paragraph paragraph = cell.Paragraphs[i];
+                                for (int j = paragraph.ChildObjects.Count - 1; j >= 0; j--)
+                                {
+                                    DocumentObject obj = paragraph.ChildObjects[j];
+                                    if (obj.DocumentObjectType == DocumentObjectType.Picture)
+                                    {
+                                        paragraph.ChildObjects.RemoveAt(j); 
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
+
+
         }
 
         /// <summary>
