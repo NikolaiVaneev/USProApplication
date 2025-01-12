@@ -73,7 +73,14 @@ namespace USProApplication.Services
             string outputPath = Path.Combine(Path.GetTempPath(), $"Договор {order.Number!.Replace('/', '_')}-{order.Name}.docx");
 
             Document doc = new();
-            doc.LoadFromFile(templatePath);
+            try
+            {
+                doc.LoadFromFile(templatePath);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Невозможно открыть шаблон документа. Вероятно, он отсутствует в папке Templates.");
+            }
 
             try
             {
@@ -82,7 +89,7 @@ namespace USProApplication.Services
             }
             catch (Exception)
             {
-                throw new Exception("Невозможно сохранить акт. Вероятно, он уже открыт. Закройте документ и попробуйте снова");
+                throw new Exception("Невозможно сохранить договор. Вероятно, он уже открыт. Закройте документ и попробуйте снова");
             }
         }
 
@@ -92,9 +99,69 @@ namespace USProApplication.Services
             string outputPath = Path.Combine(Path.GetTempPath(), $"Договор-счет {order.Number!.Replace('/', '_')}-{order.Name}.docx");
 
             Document doc = new();
-            doc.LoadFromFile(templatePath);
+            try
+            {
+                doc.LoadFromFile(templatePath);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Невозможно открыть шаблон документа. Вероятно, он отсутствует в папке Templates.");
+            }
 
+            if (!stamp) RemoveImages(doc);
 
+            doc.Replace("{Number}", order.Number, true, true);
+            doc.Replace("{Address}", order.Address, true, true);
+            doc.Replace("{Service}", order.AdditionalService, true, true);
+            doc.Replace("{Square}", order.Square.ToString(), true, true);
+            doc.Replace("{Deadline}", GetDeadline(order.Square), true, true);
+            doc.Replace("{Date}", $"{DateConverter.ConvertDateToString(DateTime.Now)} г.", true, true);
+            doc.Replace("{Price}", string.Format("{0:N2}", order.Price), true, true);
+            doc.Replace("{FullPrice}", DecimalConverter.ConvertDecimalToString(order.Price), true, true);
+
+            if (order.UsingNDS && order.NDS > 0)
+            {
+                var tax = Math.Round((decimal)(order.Price! * order.NDS / (100 + order.NDS)), 2);
+                doc.Replace("{NDSType}", $"В том числе НДС {order.NDS}%", true, true);
+                doc.Replace("{NDS}", string.Format("{0:N2}", tax), true, true);
+                doc.Replace("{NDSNotExist}", string.Empty, true, true);
+                doc.Replace("{NDSExist}", $"В том числе НДС {order.NDS}% {string.Format("{0:N2}", tax)} ({DecimalConverter.ConvertDecimalToString(tax)}) рублей", true, true);
+            }
+            else
+            {
+                doc.Replace("{NDSNotExist}", "НДС не облагается (Уведомление о возможности применения УСН № 2490 от 03.12.2007 г.)", true, true);
+                doc.Replace("{NDSExist}", string.Empty, true, true);
+                doc.Replace("{NDSType}", "Без налога (НДС)", true, true);
+                doc.Replace("{NDS}", "-", true, true);
+            }
+
+            var client = await counterpartyRepository.GetByIdAsync((Guid)order.CustomerId!);
+            if (client != null)
+            {
+                doc.Replace("{ClientName}", client.Name, true, true);
+                doc.Replace("{ClientAddress}", client.Address, true, true);
+                doc.Replace("{ClientINN}", client.INN, true, true);
+                doc.Replace("{ClientKPP}", client.KPP, true, true);
+                doc.Replace("{Email}", order.Email, true, true);
+            }
+
+            var executor = await counterpartyRepository.GetByIdAsync((Guid)order.ExecutorId!);
+            if (executor != null)
+            {
+                doc.Replace("{ExecutorName}", executor.Name, true, true);
+                doc.Replace("{ExecutorAddress}", executor.Address, true, true);
+
+                doc.Replace("{Bank}", executor.Bank, true, true);
+                doc.Replace("{BIK}", executor.BIK, true, true);
+                doc.Replace("{OGRN}", executor.OGRN, true, true);
+                doc.Replace("{INN}", executor.INN, true, true);
+                doc.Replace("{KPP}", executor.KPP, true, true);
+                doc.Replace("{CorrAccount}", executor.CorrAccount, true, true);
+                doc.Replace("{Account}", executor.PaymentAccount, true, true);
+
+                doc.Replace("{Recipient}", executor.Name, true, true);
+                doc.Replace("{Executor}", $"{executor.Name}, ИНН {executor.INN}, КПП {executor.KPP}, {executor.Address}", true, true);
+            }
 
 
             try
@@ -125,7 +192,7 @@ namespace USProApplication.Services
             {
                 throw new Exception("Невозможно открыть шаблон документа. Вероятно, он отсутствует в папке Templates.");
             }
-            
+
             if (!stamp) RemoveImages(doc);
 
             switch (type)
@@ -156,7 +223,7 @@ namespace USProApplication.Services
             doc.Replace("{Price}", string.Format("{0:N2}", price), true, true);
             doc.Replace("{FullPrice}", DecimalConverter.ConvertDecimalToString(price), true, true);
             doc.Replace("{PayType}", billType, true, true);
-            
+
 
             if (order.UsingNDS && order.NDS > 0)
             {
@@ -262,6 +329,45 @@ namespace USProApplication.Services
             }
         }
 
+        private static string GetDeadline(int number)
+        {
+            int term = number;
+            if (number == 0) return "нуля";
+
+            string[] units = { "", "одного", "двух", "трех", "четырех", "пяти", "шести", "семи", "восьми", "девяти" };
+            string[] teens = { "десяти", "одиннадцати", "двенадцати", "тринадцати", "четырнадцати", "пятнадцати", "шестнадцати", "семнадцати", "восемнадцати", "девятнадцати" };
+            string[] tens = { "", "", "двадцати", "тридцати", "сорока", "пятидесяти", "шестидесяти", "семидесяти", "восьмидесяти", "девяноста" };
+            string[] hundreds = { "", "ста", "двухсот", "трехсот", "четырехсот", "пятисот", "шестисот", "семисот", "восьмисот", "девятисот" };
+
+            var parts = new List<string>();
+
+            if (number >= 100)
+            {
+                int hundredPart = number / 100;
+                parts.Add(hundreds[hundredPart]);
+                number %= 100;
+            }
+
+            if (number >= 20)
+            {
+                int tensPart = number / 10;
+                parts.Add(tens[tensPart]);
+                number %= 10;
+            }
+
+            if (number >= 10)
+            {
+                parts.Add(teens[number - 10]);
+                number = 0;
+            }
+
+            if (number > 0)
+            {
+                parts.Add(units[number]);
+            }
+
+            return $"{term} ({string.Join(" ", parts)})";
+        }
         /// <summary>
         /// Получить описание НДС
         /// </summary>
@@ -317,7 +423,7 @@ namespace USProApplication.Services
                                     DocumentObject obj = paragraph.ChildObjects[j];
                                     if (obj.DocumentObjectType == DocumentObjectType.Picture)
                                     {
-                                        paragraph.ChildObjects.RemoveAt(j); 
+                                        paragraph.ChildObjects.RemoveAt(j);
                                     }
                                 }
                             }

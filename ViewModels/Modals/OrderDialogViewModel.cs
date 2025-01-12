@@ -98,7 +98,14 @@ public class OrderDialogViewModel(IDocCreator docCreator) : ReactiveObject
     private AsyncCommand? _createContractCommand;
     public AsyncCommand CreateContractCommand => _createContractCommand ??= new AsyncCommand(async () =>
     {
-        await docCreator.CreateContractAsync(Order!, NeedStamp);
+        try
+        {
+            await docCreator.CreateContractAsync(Order!, NeedStamp);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Ошибка создания документа", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }, () => !string.IsNullOrWhiteSpace(Order?.Name));
 
     private AsyncCommand? _createPrepaymentInvoiceCommand;
@@ -152,7 +159,7 @@ public class OrderDialogViewModel(IDocCreator docCreator) : ReactiveObject
         {
             MessageBox.Show(ex.Message, "Ошибка создания документа", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
-    }, () => Order!.CustomerId != null);
+    }, () => Order!.CustomerId != null && Order!.ExecutorId != null && !string.IsNullOrWhiteSpace(Order!.Address) && !string.IsNullOrWhiteSpace(Order!.Number) && !string.IsNullOrWhiteSpace(Order.AdditionalService));
 
     private AsyncCommand? _createActCommand;
     public AsyncCommand CreateActCommand => _createActCommand ??= new AsyncCommand(async () =>
