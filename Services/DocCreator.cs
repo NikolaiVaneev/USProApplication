@@ -1,6 +1,7 @@
 ﻿using OfficeOpenXml;
 using Spire.Doc;
 using Spire.Doc.Documents;
+using System.CodeDom.Compiler;
 using System.IO;
 using USProApplication.DataBase.Entities;
 using USProApplication.Models;
@@ -274,8 +275,7 @@ namespace USProApplication.Services
         public async Task CreateUPDAsync(OrderDTO order, bool stamp)
         {
             string templatePath = Path.Combine("Templates", "UPD.xlsx");
-            string outputPath = Path.Combine(Path.GetTempPath(), $"УПД {order.Number!.Replace('/', '_')}-{order.Name}.xlsx");
-
+            string outputPath;
             FileInfo fileInfo = new(templatePath);
 
             using ExcelPackage package = new(fileInfo);
@@ -286,8 +286,6 @@ namespace USProApplication.Services
             worksheet.Cells["Y1"].Value = $"{DateConverter.ConvertDateToString(DateTime.Now)} г.";
             worksheet.Cells["BF15"].Value = order.Price;
             worksheet.Cells["O31"].Value = $"{DateConverter.ConvertDateToString(order.СompletionDate)} года";
-            worksheet.Cells["J15"].Value = $"Оказание услуг по разработке проектной документации согласно договору №USР-{order.Number} от {order.StartDate:dd.MM.yyyy} г. {order.Name}";
-            worksheet.Cells["T22"].Value = $"USР-{order.Number} от {order.StartDate:dd.MM.yyyy} г.";
 
             if (order.UsingNDS && order.NDS > 0)
             {
@@ -297,23 +295,40 @@ namespace USProApplication.Services
                 worksheet.Cells["BB15"].Value = tax;
             }
 
-            var client = await counterpartyRepository.GetByIdAsync((Guid)order.CustomerId!);
-            if (client != null)
+            CounterpartyDTO client = new();
+            CounterpartyDTO executor = new();
+
+            if (order.ParentId == null)
             {
-                worksheet.Cells["BE4"].Value = client.Name;
-                worksheet.Cells["BE5"].Value = client.Address;
-                worksheet.Cells["BE6"].Value = $"{client.INN}/{client.KPP}";
-                worksheet.Cells["AS40"].Value = $"{client.Name}, ИНН/КПП {client.INN}/{client.KPP}";
+                outputPath = Path.Combine(Path.GetTempPath(), $"УПД {order.Number!.Replace('/', '_')}-{order.Name}.xlsx");
+
+                worksheet.Cells["J15"].Value = $"Оказание услуг по разработке проектной документации согласно договору №USР-{order.Number} от {order.StartDate:dd.MM.yyyy} г. {order.Name}";
+                worksheet.Cells["T22"].Value = $"USР-{order.Number} от {order.StartDate:dd.MM.yyyy} г.";
+
+                client = await counterpartyRepository.GetByIdAsync(order.CustomerId!.Value);
+                executor = await counterpartyRepository.GetByIdAsync(order.ExecutorId!.Value);
+
+            }
+            else
+            {
+                outputPath = Path.Combine(Path.GetTempPath(), $"УПД ДС {order.Number!.Replace('/', '_')}-{order.Name}.xlsx");
+
+                worksheet.Cells["J15"].Value = $"Оказание услуг по разработке проектной документации согласно доп. соглашению №{order.Number} от {order.StartDate:dd.MM.yyyy} г. по дог. №USР-{order.ParentOrder!.Number} от {order.ParentOrder!.StartDate:dd.MM.yyyy} г. {order.Name}";
+                worksheet.Cells["T22"].Value = $"ДС {order.Number} от {order.StartDate:dd.MM.yyyy} к USР-{order.ParentOrder!.Number} от {order.ParentOrder!.StartDate:dd.MM.yyyy}";
+
+                client = await counterpartyRepository.GetByIdAsync(order.ParentOrder!.CustomerId!.Value);
+                executor = await counterpartyRepository.GetByIdAsync(order.ParentOrder!.ExecutorId!.Value);
             }
 
-            var executor = await counterpartyRepository.GetByIdAsync((Guid)order.ExecutorId!);
-            if (executor != null)
-            {
-                worksheet.Cells["R4"].Value = executor.Name;
-                worksheet.Cells["R5"].Value = executor.Address;
-                worksheet.Cells["R6"].Value = $"{executor.INN}/{executor.KPP}";
-                worksheet.Cells["C40"].Value = $"{executor.Name}, ИНН/КПП {executor.INN}/{executor.KPP}";
-            }
+            worksheet.Cells["BE4"].Value = client!.Name;
+            worksheet.Cells["BE5"].Value = client.Address;
+            worksheet.Cells["BE6"].Value = $"{client.INN}/{client.KPP}";
+            worksheet.Cells["AS40"].Value = $"{client.Name}, ИНН/КПП {client.INN}/{client.KPP}";
+
+            worksheet.Cells["R4"].Value = executor!.Name;
+            worksheet.Cells["R5"].Value = executor.Address;
+            worksheet.Cells["R6"].Value = $"{executor.INN}/{executor.KPP}";
+            worksheet.Cells["C40"].Value = $"{executor.Name}, ИНН/КПП {executor.INN}/{executor.KPP}";
 
             // Сохранение документа
             try

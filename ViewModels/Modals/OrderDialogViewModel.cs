@@ -186,5 +186,8 @@ public class OrderDialogViewModel(IDocCreator docCreator) : ReactiveObject
         {
             MessageBox.Show(ex.Message, "Ошибка создания документа", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
-    }, () => Order!.CustomerId != null && Order!.ExecutorId != null && !string.IsNullOrWhiteSpace(Order.Number) && Order.StartDate != null && Order.СompletionDate != null);
+    }, () => ((Order!.ParentId == null && Order!.CustomerId != null && Order!.ExecutorId != null) || Order!.ParentId != null)
+            && !string.IsNullOrWhiteSpace(Order.Number)
+            && Order.StartDate != null
+            && Order.СompletionDate != null);
 }
