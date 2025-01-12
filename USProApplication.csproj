@@ -57,6 +57,9 @@
     <None Update="Templates\Bill.docx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Templates\ContractBill.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Templates\UPD.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

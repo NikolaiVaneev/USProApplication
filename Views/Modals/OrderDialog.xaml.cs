@@ -26,6 +26,7 @@ public partial class OrderDialog : Window
 
     private void Save(OrderDTO? order)
     {
+        ((OrderDialogViewModel)DataContext).OnSave -= Save;
         _order = order;
         DialogResult = true;
     }

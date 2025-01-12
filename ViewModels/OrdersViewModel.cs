@@ -85,7 +85,6 @@ public class OrdersViewModel : ReactiveObject
         var services = await _directoryRepository.GetServicesAsync();
         OrderDialog dialog = new();
 
-
         if (dialog.ShowDialog(new OrderDTO(), executors, clients, services, out OrderDTO? result))
         {
             if (result != null)

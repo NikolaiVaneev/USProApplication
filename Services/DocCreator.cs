@@ -89,9 +89,26 @@ namespace USProApplication.Services
             }
         }
 
-        public Task CreateContractInvoiceAsync(OrderDTO order, bool stamp)
+        public async Task CreateContractInvoiceAsync(OrderDTO order, bool stamp)
         {
-            throw new NotImplementedException();
+            string templatePath = Path.Combine("Templates", "ContractBill.docx");
+            string outputPath = Path.Combine(Path.GetTempPath(), $"Договор-счет {order.Number!.Replace('/', '_')}-{order.Name}.docx");
+
+            Document doc = new();
+            doc.LoadFromFile(templatePath);
+
+
+
+
+            try
+            {
+                doc.SaveToFile(outputPath);
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(outputPath) { UseShellExecute = true });
+            }
+            catch (Exception)
+            {
+                throw new Exception("Невозможно сохранить договор-счет. Вероятно, он уже открыт. Закройте документ и попробуйте снова");
+            }
         }
 
         public async Task CreatePaymentInvoiceAsync(OrderDTO order, PaymentInvioceTypes type, bool stamp)
