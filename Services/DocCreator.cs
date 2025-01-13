@@ -97,6 +97,72 @@ namespace USProApplication.Services
                 throw new Exception("Невозможно открыть шаблон документа. Вероятно, он отсутствует в папке Templates.");
             }
 
+            if (!stamp) RemoveImages(doc);
+
+
+            doc.Replace("{ContractNumber}", order.Number, true, true);
+            doc.Replace("{ContractDate}", $"{DateConverter.ConvertDateToString(order.StartDate)}", true, true);
+            doc.Replace("{Address}", order.Address, true, true);
+            doc.Replace("{Square}", GetNumberDescription(order.Square, true), true, true);
+            doc.Replace("{Deadline}", GetNumberDescription(order.Term), true, true);
+
+            if (order.SelectedServicesIds != null)
+            {
+                var services = new StringBuilder();
+                var servicesCollection = await serviceRepository.GetAllAsync();
+                foreach (var serviceId in order.SelectedServicesIds)
+                {
+                    var service = servicesCollection.FirstOrDefault(s => s.Id == serviceId);
+
+                    if (service != null)
+                    {
+                        services.Append($"- Раздел «{service.Name}»,\n");
+                    }
+                }
+                services.Append("- Согласование проектной документации с Арендодателем.");
+
+                doc.Replace("{Services}", services.ToString(), true, true);
+            }
+
+
+            var client = await counterpartyRepository.GetByIdAsync((Guid)order.CustomerId!);
+            var executor = await counterpartyRepository.GetByIdAsync((Guid)order.ExecutorId!);
+
+            var morpherService = new MorpherService();
+
+            doc.Replace("{ClientOrg}", client!.Name, true, true);
+            doc.Replace("{ClientFullName}", await morpherService.GetDeclensionAsync(client.Director, MorpherService.RussianCase.Accusative), true, true);
+            doc.Replace("{ClientPosition}", GetDirectorPosition(client.DirectorPosition, false), true, true);
+            doc.Replace("{ClientShortName}", await morpherService.GetShortNameAsync(client.Director, MorpherService.RussianCase.Nominative), true, true);
+            doc.Replace("{ClientPositionI}", GetDirectorPosition(client.DirectorPosition, true), true, true);
+
+            doc.Replace("{ExecutorOrg}", executor!.Name, true, true);
+            doc.Replace("{ExecutorFullName}", await morpherService.GetDeclensionAsync(executor.Director, MorpherService.RussianCase.Accusative), true, true);
+            doc.Replace("{ExecutorPosition}", GetDirectorPosition(executor.DirectorPosition, false), true, true);
+            doc.Replace("{ExecutorPositionI}", GetDirectorPosition(executor.DirectorPosition, true), true, true);
+            doc.Replace("{ExecutorShortName}", await morpherService.GetShortNameAsync(executor.Director, MorpherService.RussianCase.Nominative), true, true);
+
+            doc.Replace("{Price}", string.Format("{0:N2}", order.Price), true, true);
+            doc.Replace("{FullPrice}", DecimalConverter.ConvertDecimalToString(order.Price), true, true);
+            doc.Replace("{ExecutorDetails}", await CreateContragentDetails(order, client, executor, true), true, true);
+            doc.Replace("{ClientDetails}", await CreateContragentDetails(order, client, executor, false), true, true);
+
+            if (order.UsingNDS && order.NDS > 0)
+            {
+                var tax = Math.Round((decimal)(order.Price! * order.NDS / (100 + order.NDS)), 2);
+                doc.Replace("{NDSType}", $"В том числе НДС {order.NDS}%", true, true);
+                doc.Replace("{NDS}", string.Format("{0:N2}", tax), true, true);
+                doc.Replace("{NDSNotExist}", string.Empty, true, true);
+                doc.Replace("{NDSExist}", $"В том числе НДС {order.NDS}% {string.Format("{0:N2}", tax)} ({DecimalConverter.ConvertDecimalToString(tax)}) рублей", true, true);
+            }
+            else
+            {
+                doc.Replace("{NDSNotExist}", "НДС не облагается (Уведомление о возможности применения УСН № 2490 от 03.12.2007 г.)", true, true);
+                doc.Replace("{NDSExist}", string.Empty, true, true);
+                doc.Replace("{NDSType}", "Без налога (НДС)", true, true);
+                doc.Replace("{NDS}", "-", true, true);
+            }
+
             try
             {
                 doc.SaveToFile(outputPath);
@@ -106,6 +172,58 @@ namespace USProApplication.Services
             {
                 throw new Exception("Невозможно сохранить договор. Вероятно, он уже открыт. Закройте документ и попробуйте снова");
             }
+        }
+
+        /// <summary>
+        /// Создать реквизиты контрагента
+        /// </summary>
+        /// <param name="order">Заказ</param>
+        /// <param name="isExecutor">Исполнитель</param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private static async Task<string> CreateContragentDetails(OrderDTO order, CounterpartyDTO? client, CounterpartyDTO? executor, bool isExecutor)
+        {
+            StringBuilder details = new();
+            var morpherService = new MorpherService();
+
+            if (isExecutor && executor != null)
+            {
+                details.AppendLine(executor.Name);
+                details.AppendLine($"ИНН/КПП {executor.INN}/{executor.KPP}");
+                details.AppendLine($"Юридический адрес: {executor.Address}");
+                details.AppendLine("Банковские реквизиты:");
+                details.AppendLine($"р/с: {executor.PaymentAccount}");
+                details.AppendLine($"в {executor.Bank}");
+                details.AppendLine($"к/с: {executor.CorrAccount}");
+                details.AppendLine($"БИК {executor.BIK}");
+                details.AppendLine("(домен @usproject.ru)");
+                details.AppendLine();
+                details.AppendLine(GetDirectorPosition(executor.DirectorPosition, true));
+                details.AppendLine($"/{await morpherService.GetShortNameAsync(executor.Director, MorpherService.RussianCase.Nominative)}/");
+                details.AppendLine();
+                details.AppendLine($"М.П.");
+            }
+
+            if (!isExecutor && client != null)
+            {
+                details.AppendLine(client.Name);
+                details.AppendLine($"ИНН/КПП {client.INN}/{client.KPP}");
+                details.AppendLine($"Юридический адрес: {client.Address}");
+                details.AppendLine("Банковские реквизиты:");
+                details.AppendLine($"р/с: {client.PaymentAccount}");
+                details.AppendLine($"в {client.Bank}");
+                details.AppendLine($"к/с: {client.CorrAccount}");
+                details.AppendLine($"БИК {client.BIK}");
+                details.AppendLine($"E-mail {order.Email}");
+                details.AppendLine($"Телефон {order.Phone}");
+                details.AppendLine();
+                details.AppendLine(GetDirectorPosition(client.DirectorPosition, true));
+                details.AppendLine($"/{await morpherService.GetShortNameAsync(client.Director, MorpherService.RussianCase.Nominative)}/");
+                details.AppendLine();
+                details.AppendLine($"М.П.");
+            }
+
+            return details.ToString();
         }
 
         public async Task CreateAdditionalContractAsync(OrderDTO order, bool stamp)
@@ -643,7 +761,5 @@ namespace USProApplication.Services
                 _ => throw new NotImplementedException()
             };
         }
-
-
     }
 }
