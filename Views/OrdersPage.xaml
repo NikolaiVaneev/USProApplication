@@ -36,8 +36,10 @@
                   ItemsSource="{Binding FilteredOrders}"
                   SelectedItem="{Binding SelectedOrder}"
                   SelectionMode="Single"
+                  RowDetailsVisibilityMode="VisibleWhenSelected"
                   utils:DataGridDoubleClickBehavior.Command="{Binding EditCommand}">
 
+            <!--RowDetailsVisibilityMode="Visible"-->
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Договор" Width="auto" Binding="{Binding ContractNo}" />
                 <DataGridTextColumn Header="Дата договора" Width="140" Binding="{Binding ContractDate, StringFormat='dd.MM.yyyy'}"/>
@@ -53,9 +55,6 @@
                                 <DataTrigger Binding="{Binding Status}" Value="Выполнен">
                                     <Setter Property="Foreground" Value="Green" />
                                 </DataTrigger>
-                                <DataTrigger Binding="{Binding Status}" Value="Просрочен">
-                                    <Setter Property="Foreground" Value="Red" />
-                                </DataTrigger>
                                 <DataTrigger Binding="{Binding Status}" Value="В работе">
                                     <Setter Property="Foreground" Value="#FF178DBF" />
                                 </DataTrigger>
@@ -64,6 +63,47 @@
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
             </DataGrid.Columns>
+
+            <DataGrid.RowDetailsTemplate>
+                <DataTemplate>
+                    <ItemsControl ItemsSource="{Binding AdditionalOrders}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="Gainsboro" BorderThickness="1 0 1 1" CornerRadius="3" Margin="14 0 0 0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Orientation="Horizontal" Grid.Column="0">
+                                            <TextBlock FontSize="13" Text="{Binding ContractNo}" Margin="8,0,0,0"/>
+                                            <TextBlock FontSize="13" Text="   от   " />
+                                            <TextBlock FontSize="13" Text="{Binding ContractDate, StringFormat='dd.MM.yyyy'}" />
+                                        </StackPanel>
+
+                                        <TextBlock FontSize="13" Text="{Binding Bill}" Margin="0,0,5,0" Grid.Column="1" />
+                                        <TextBlock FontSize="13" Text="{Binding Status}" Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}" Margin="10,0,5,0" Grid.Column="2" />
+                                        <StackPanel Orientation="Horizontal" Grid.Column="3">
+                                            <Button Content="{materialDesign:PackIcon Pencil}" 
+                                                Width="25" Height="25" Padding="0"
+                                                Command="{Binding DataContext.EditAdditionalOrderCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
+                                                CommandParameter="{Binding}"/>
+                                            <Button Content="{materialDesign:PackIcon DeleteOutline}" 
+                                                Width="25" Height="25" Padding="0" 
+                                                Foreground="OrangeRed"
+                                                Command="{Binding DataContext.DeleteAdditionalOrderCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
+                                                CommandParameter="{Binding}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </DataTemplate>
+            </DataGrid.RowDetailsTemplate>
 
             <DataGrid.ContextMenu>
                 <ContextMenu>

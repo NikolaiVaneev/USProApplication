@@ -66,6 +66,8 @@ namespace USProApplication.DataBase.Repository
             var orders = await context.Orders
                 .Include(x => x.Executor)
                 .Include(x => x.Customer)
+                .Include(x => x.ChildOrders)
+                .Where(x => x.ParentId == null)
                 .OrderByDescending(x => x.StartDate).ToListAsync();
 
             return mapper.Map<List<OrderShortInfo>>(orders);

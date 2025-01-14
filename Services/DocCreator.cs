@@ -758,7 +758,7 @@ namespace USProApplication.Services
 
             return $"{term} ({string.Join(" ", parts)})";
         }
-    
+
         /// <summary>
         /// Получить описание НДС
         /// </summary>

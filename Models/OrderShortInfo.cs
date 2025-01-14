@@ -48,5 +48,10 @@
         /// Счет
         /// </summary>
         public string Bill { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Дополнительные соглашения
+        /// </summary>
+        public List<OrderShortInfo> AdditionalOrders { get; set; } = [];
     }
 }

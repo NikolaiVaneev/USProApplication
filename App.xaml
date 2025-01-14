@@ -8,6 +8,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
+            <converters:StatusToColorConverter x:Key="StatusToColorConverter" />
             
             <!-- Подключение шрифта Gilroy -->
             <FontFamily x:Key="GilroyRegular">pack://application:,,,/Fonts/#Gilroy Regular</FontFamily>

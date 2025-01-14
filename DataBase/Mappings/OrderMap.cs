@@ -82,11 +82,12 @@ namespace USProApplication.DataBase.Mappings
                 .ForMember(e => e.Status, opts => opts.MapFrom(src => src.IsCompleted ? "Выполнен" : "В работе"))
                 .ForMember(e => e.Address, opts => opts.MapFrom(src => src.ParentId == null ? src.Address : src.ParentOrder!.Address))
                 .ForMember(e => e.Bill, opts => opts.MapFrom(src => GetLastBill(src)))
-                .ForMember(e => e.ContractNo, opts => opts.MapFrom(src => src.ParentId == null ? $"{src.Number}" : $"ДС №{src.Number} к {src.ParentOrder!.Number}"))
+                .ForMember(e => e.ContractNo, opts => opts.MapFrom(src => src.ParentId == null ? $"{src.Number}" : $"ДС №{src.Number}"))
                 .ForMember(e => e.IsMainOrder, opts => opts.MapFrom(src => src.ParentId == null))
                 .ForMember(e => e.Client, opts => opts.MapFrom(src => src.Customer != null ? src.Customer.Name : string.Empty))
                 .ForMember(e => e.Executor, opts => opts.MapFrom(src => src.Executor != null ? src.Executor.Name : string.Empty))
-                .ForMember(e => e.ContractDate, opts => opts.MapFrom(src => src.StartDate));
+                .ForMember(e => e.ContractDate, opts => opts.MapFrom(src => src.StartDate))
+                .ForMember(e => e.AdditionalOrders, opts => opts.MapFrom(src => src.ChildOrders));
         }
 
         private static string GetLastBill(Order order)
