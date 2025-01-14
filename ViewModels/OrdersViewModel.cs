@@ -101,8 +101,6 @@ public class OrdersViewModel : ReactiveObject
                 result.Id = Guid.NewGuid();
                 await _repo.AddAsync(result);
 
-                //Orders.Add(_mapper.Map<OrderShortInfo>(result));
-                //ApplyFilter();
                 await LoadOrdersAsync();
             }
         }
@@ -124,7 +122,6 @@ public class OrdersViewModel : ReactiveObject
             StartDate = DateTime.Now,
             Phone = parrentOrder?.Phone,
             ParentOrder = parrentOrder,
-            //SelectedServicesIds = parrentOrder?.SelectedServicesIds
         };
 
         if (dialog.ShowDialog(newOrder, executors, clients, services, out OrderDTO? result))
@@ -134,8 +131,6 @@ public class OrdersViewModel : ReactiveObject
                 result.Id = Guid.NewGuid();
 
                 await _repo.AddAsync(result);
-                //Orders.Add(_mapper.Map<OrderShortInfo>(result));
-                //ApplyFilter();
                 await LoadOrdersAsync();
             }
         }
@@ -157,15 +152,6 @@ public class OrdersViewModel : ReactiveObject
                 if (result != null)
                 {
                     await _repo.UpdateAsync(result);
-
-                    // Обновляем запись в полной коллекции и фильтруем
-                    var index = Orders.IndexOf(SelectedOrder);
-                    if (index >= 0)
-                    {
-                        Orders[index] = _mapper.Map<OrderShortInfo>(result);
-                    }
-
-                    //ApplyFilter();
                     await LoadOrdersAsync();
                 }
             }
@@ -187,15 +173,7 @@ public class OrdersViewModel : ReactiveObject
                 if (result != null)
                 {
                     await _repo.UpdateAsync(result);
-
-                    // Обновляем запись в полной коллекции и фильтруем
-                    var index = Orders.IndexOf(SelectedOrder);
-                    if (index >= 0)
-                    {
-                        Orders[index] = _mapper.Map<OrderShortInfo>(result);
-                    }
-
-                    ApplyFilter();
+                    await LoadOrdersAsync();
                 }
             }
         }
