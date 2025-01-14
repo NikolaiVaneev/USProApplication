@@ -8,7 +8,7 @@
       xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
       xmlns:utils="clr-namespace:USProApplication.Utils"
       xmlns:vm="clr-namespace:USProApplication.ViewModels"
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="450" d:DesignWidth="1000"
       Title="OrdersPage">
 
     <Grid>
@@ -43,6 +43,8 @@
                 <DataGridTextColumn Header="Дата договора" Width="140" Binding="{Binding ContractDate, StringFormat='dd.MM.yyyy'}"/>
                 <DataGridTextColumn Header="Наименование" Width="auto" Binding="{Binding Name}" />
                 <DataGridTextColumn Header="Адрес" Width="*" Binding="{Binding Address}" />
+                <DataGridTextColumn Header="Заказчик" Width="*" Binding="{Binding Client}" />
+                <DataGridTextColumn Header="Исполнитель" Width="*" Binding="{Binding Executor}" />
                 <DataGridTextColumn Header="Площадь" Width="auto" Binding="{Binding Square}" />
                 <DataGridTextColumn Header="Статус" Width="110" Binding="{Binding Status}">
                     <DataGridTextColumn.ElementStyle>

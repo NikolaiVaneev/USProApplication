@@ -84,6 +84,8 @@ namespace USProApplication.DataBase.Mappings
                 .ForMember(e => e.Square, opts => opts.MapFrom(src => src.ParentId == null ? src.Square : src.ParentOrder!.Square))
                 .ForMember(e => e.ContractNo, opts => opts.MapFrom(src => src.ParentId == null ? $"{src.Number}" : $"ДС №{src.Number} к {src.ParentOrder!.Number}"))
                 .ForMember(e => e.IsMainOrder, opts => opts.MapFrom(src => src.ParentId == null))
+                .ForMember(e => e.Client, opts => opts.MapFrom(src => src.Customer != null ? src.Customer.Name : string.Empty))
+                .ForMember(e => e.Executor, opts => opts.MapFrom(src => src.Executor != null ? src.Executor.Name : string.Empty))
                 .ForMember(e => e.ContractDate, opts => opts.MapFrom(src => src.StartDate));
 
             CreateMap<OrderDTO, OrderShortInfo>()

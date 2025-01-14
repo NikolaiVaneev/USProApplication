@@ -63,7 +63,11 @@ namespace USProApplication.DataBase.Repository
         {
             await using var context = _contextFactory.CreateDbContext();
 
-            var orders = await context.Orders.OrderByDescending(x => x.StartDate).ToListAsync();
+            var orders = await context.Orders
+                .Include(x => x.Executor)
+                .Include(x => x.Customer)
+                .OrderByDescending(x => x.StartDate).ToListAsync();
+
             return mapper.Map<List<OrderShortInfo>>(orders);
         }
 

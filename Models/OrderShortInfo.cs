@@ -38,5 +38,20 @@
         /// Является основным договором
         /// </summary>
         public bool IsMainOrder { get; set; } = true;
+
+        /// <summary>
+        /// Исполнитель
+        /// </summary>
+        public string? Executor { get; set; }
+
+        /// <summary>
+        /// Заказчик
+        /// </summary>
+        public string Client { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Счет
+        /// </summary>
+        public string Bill { get; set; } = string.Empty;
     }
 }

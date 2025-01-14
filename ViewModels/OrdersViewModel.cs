@@ -74,6 +74,8 @@ public class OrdersViewModel : ReactiveObject
                 Orders.Where(orders =>
                     orders.Name.Contains(Filter, StringComparison.OrdinalIgnoreCase) ||
                     orders.ContractNo.Contains(Filter, StringComparison.OrdinalIgnoreCase) ||
+                    orders.Client.Contains(Filter, StringComparison.OrdinalIgnoreCase) ||
+                    orders.Executor.Contains(Filter, StringComparison.OrdinalIgnoreCase) ||
                     (orders.Address?.Contains(Filter, StringComparison.OrdinalIgnoreCase) ?? false))
               );
 
@@ -97,8 +99,8 @@ public class OrdersViewModel : ReactiveObject
             if (result != null)
             {
                 result.Id = Guid.NewGuid();
-
                 await _repo.AddAsync(result);
+
                 //Orders.Add(_mapper.Map<OrderShortInfo>(result));
                 //ApplyFilter();
                 await LoadOrdersAsync();
