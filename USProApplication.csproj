@@ -63,6 +63,9 @@
     <None Update="Templates\Contract.docx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Templates\ContractAttachment.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Templates\ContractBill.docx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

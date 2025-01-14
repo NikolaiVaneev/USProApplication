@@ -216,6 +216,53 @@ namespace USProApplication.Services
             {
                 throw new Exception("Невозможно сохранить договор. Вероятно, он уже открыт. Закройте документ и попробуйте снова");
             }
+
+            await CreateContractAttachments(order);
+        }
+
+        private async Task CreateContractAttachments(OrderDTO order)
+        {
+            string templatePath = Path.Combine("Templates", "ContractAttachment.docx");
+            string outputPath = Path.Combine(Path.GetTempPath(), $"Приложение к договору {order.Number!.Replace('/', '_')}-{order.Name}.docx");
+
+            Document doc = new();
+            try
+            {
+                doc.LoadFromFile(templatePath);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Невозможно открыть шаблон документа. Вероятно, он отсутствует в папке Templates.");
+            }
+
+            doc.Replace("{ContractNumber}", order.Number, true, true);
+            doc.Replace("{ContractDate}", $"{DateConverter.ConvertDateToString(order.StartDate)}", true, true);
+
+            if (order.SelectedServicesIds != null)
+            {
+
+            }
+
+            var client = await counterpartyRepository.GetByIdAsync((Guid)order.CustomerId!);
+            var executor = await counterpartyRepository.GetByIdAsync((Guid)order.ExecutorId!);
+
+            var morpherService = new MorpherService();
+
+            doc.Replace("{ClientShortName}", await morpherService.GetShortNameAsync(client!.Director, MorpherService.RussianCase.Nominative), true, true);
+            doc.Replace("{ClientPosition}", GetDirectorPosition(client.DirectorPosition, true), true, true);
+
+            doc.Replace("{ExecutorPosition}", GetDirectorPosition(executor!.DirectorPosition, true), true, true);
+            doc.Replace("{ExecutorShortName}", await morpherService.GetShortNameAsync(executor.Director, MorpherService.RussianCase.Nominative), true, true);
+
+            try
+            {
+                doc.SaveToFile(outputPath);
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(outputPath) { UseShellExecute = true });
+            }
+            catch (Exception)
+            {
+                throw new Exception("Невозможно сохранить приложение к договору. Вероятно, оно уже открыто. Закройте документ и попробуйте снова");
+            }
         }
 
         /// <summary>
