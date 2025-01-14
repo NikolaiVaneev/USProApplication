@@ -165,7 +165,8 @@ public class OrdersViewModel : ReactiveObject
                         Orders[index] = _mapper.Map<OrderShortInfo>(result);
                     }
 
-                    ApplyFilter();
+                    //ApplyFilter();
+                    await LoadOrdersAsync();
                 }
             }
         }

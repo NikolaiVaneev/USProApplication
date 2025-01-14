@@ -81,7 +81,7 @@ namespace USProApplication.DataBase.Mappings
                 .ForMember(e => e.Name, opts => opts.MapFrom(src => src.ParentId == null ? src.Name : src.ParentOrder!.Name))
                 .ForMember(e => e.Status, opts => opts.MapFrom(src => src.IsCompleted ? "Выполнен" : "В работе"))
                 .ForMember(e => e.Address, opts => opts.MapFrom(src => src.ParentId == null ? src.Address : src.ParentOrder!.Address))
-                .ForMember(e => e.Square, opts => opts.MapFrom(src => src.ParentId == null ? src.Square : src.ParentOrder!.Square))
+                .ForMember(e => e.Bill, opts => opts.MapFrom(src => GetLastBill(src)))
                 .ForMember(e => e.ContractNo, opts => opts.MapFrom(src => src.ParentId == null ? $"{src.Number}" : $"ДС №{src.Number} к {src.ParentOrder!.Number}"))
                 .ForMember(e => e.IsMainOrder, opts => opts.MapFrom(src => src.ParentId == null))
                 .ForMember(e => e.Client, opts => opts.MapFrom(src => src.Customer != null ? src.Customer.Name : string.Empty))
@@ -93,12 +93,41 @@ namespace USProApplication.DataBase.Mappings
                 .ForMember(e => e.Name, opts => opts.MapFrom(src => src.ParentId == null ? src.Name : src.ParentOrder!.Name))
                 .ForMember(e => e.Status, opts => opts.MapFrom(src => src.IsCompleted ? "Выполнен" : "В работе"))
                 .ForMember(e => e.Address, opts => opts.MapFrom(src => src.ParentId == null ? src.Address : src.ParentOrder!.Address))
-                .ForMember(e => e.Square, opts => opts.MapFrom(src => src.ParentId == null ? src.Square : src.ParentOrder!.Square))
+                .ForMember(e => e.Bill, opts => opts.MapFrom(src => GetLastBill(src)))
                 .ForMember(e => e.ContractNo, opts => opts.MapFrom(src => src.ParentId == null ? $"{src.Number}" : $"ДС №{src.Number} к {src.ParentOrder!.Number}"))
                 .ForMember(e => e.IsMainOrder, opts => opts.MapFrom(src => src.ParentId == null))
                 .ForMember(e => e.ContractDate, opts => opts.MapFrom(src => src.StartDate.HasValue
                     ? DateOnly.FromDateTime(src.StartDate.Value)
                     : (DateOnly?)null));
+
+        }
+
+        private static string GetLastBill(Order order)
+        {
+            if (order.ApprovalPercent != null && order.ApprovalPercent > 0 && order.ApprovalBillDate != null && order.ApprovalBillNumber != null)
+                return $"{order.ApprovalBillNumber} от {order.ApprovalBillDate.Value:dd.MM.yyyy}";
+
+            if (order.ExecutionPercent != null && order.ExecutionPercent > 0 && order.ExecutionBillDate != null && order.ExecutionBillNumber != null)
+                return $"{order.ExecutionBillNumber} от {order.ExecutionBillDate.Value:dd.MM.yyyy}";
+
+            if (order.PrepaymentPercent != null && order.PrepaymentPercent > 0 && order.PrepaymentBillDate != null && order.PrepaymentBillNumber != null)
+                return $"{order.PrepaymentBillNumber} от {order.PrepaymentBillDate.Value:dd.MM.yyyy}";
+
+            return string.Empty;
+        }
+
+        private static string GetLastBill(OrderDTO order)
+        {
+            if (order.ApprovalPercent != null && order.ApprovalPercent > 0 && order.ApprovalBillDate != null && order.ApprovalBillNumber != null)
+                return $"{order.ApprovalBillNumber} от {order.ApprovalBillDate.Value:dd.MM.yyyy}";
+
+            if (order.ExecutionPercent != null && order.ExecutionPercent > 0 && order.ExecutionBillDate != null && order.ExecutionBillNumber != null)
+                return $"{order.ExecutionBillNumber} от {order.ExecutionBillDate.Value:dd.MM.yyyy}";
+
+            if (order.PrepaymentPercent != null && order.PrepaymentPercent > 0 && order.PrepaymentBillDate != null && order.PrepaymentBillNumber != null)
+                return $"{order.PrepaymentBillNumber} от {order.PrepaymentBillDate.Value:dd.MM.yyyy}";
+
+            return string.Empty;
         }
     }
 }

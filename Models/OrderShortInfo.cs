@@ -15,11 +15,6 @@
         public string Address { get; set; } = string.Empty;
 
         /// <summary>
-        /// Площадь
-        /// </summary>
-        public int Square { get; set; }
-
-        /// <summary>
         /// Номер договора
         /// </summary>
         public string ContractNo { get; set; } = string.Empty;
