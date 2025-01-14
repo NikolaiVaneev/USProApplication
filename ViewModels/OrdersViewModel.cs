@@ -48,7 +48,7 @@ public class OrdersViewModel : ReactiveObject
         AddAdditionalOrder = new AsyncCommand(AddAdditionalOrderAsync, CanAddAdditionalOrder);
     }
 
-    private async void LoadOrdersAsync()
+    private async Task LoadOrdersAsync()
     {
         IsLoading = true;
         try
@@ -99,8 +99,9 @@ public class OrdersViewModel : ReactiveObject
                 result.Id = Guid.NewGuid();
 
                 await _repo.AddAsync(result);
-                Orders.Add(_mapper.Map<OrderShortInfo>(result));
-                ApplyFilter();
+                //Orders.Add(_mapper.Map<OrderShortInfo>(result));
+                //ApplyFilter();
+                await LoadOrdersAsync();
             }
         }
     }
@@ -121,7 +122,7 @@ public class OrdersViewModel : ReactiveObject
             StartDate = DateTime.Now,
             Phone = parrentOrder?.Phone,
             ParentOrder = parrentOrder,
-            SelectedServicesIds = parrentOrder?.SelectedServicesIds
+            //SelectedServicesIds = parrentOrder?.SelectedServicesIds
         };
 
         if (dialog.ShowDialog(newOrder, executors, clients, services, out OrderDTO? result))
@@ -131,8 +132,9 @@ public class OrdersViewModel : ReactiveObject
                 result.Id = Guid.NewGuid();
 
                 await _repo.AddAsync(result);
-                Orders.Add(_mapper.Map<OrderShortInfo>(result));
-                ApplyFilter();
+                //Orders.Add(_mapper.Map<OrderShortInfo>(result));
+                //ApplyFilter();
+                await LoadOrdersAsync();
             }
         }
     }
