@@ -38,8 +38,7 @@
             </DockPanel>
         </StackPanel>
 
-
-        <TabControl Grid.Row="1" Margin="0 5 0 0">
+        <TabControl Grid.Row="1" Margin="0 5 0 0" SelectedIndex="{Binding TabIndex}">
             <TabItem Header="Общие сведения">
                 <StackPanel>
                     <materialDesign:Card Padding="10 6" Margin="7">

@@ -15,7 +15,7 @@ public class OrderDialogViewModel(IDocCreator docCreator) : ReactiveObject
     [Reactive] public ICollection<DictionaryItem>? Customers { get; set; }
     [Reactive] public ObservableCollection<ServiceItem>? Services { get; set; } = [];
     [Reactive] public int SelectedServicesCount { get; set; }
-
+    [Reactive] public int TabIndex { get; set; }
     [Reactive] public decimal TotalPrice { get; set; } = 0.0m;
     [Reactive] public decimal PriceToMeter { get; set; } = 0.0m;
 
@@ -26,6 +26,13 @@ public class OrderDialogViewModel(IDocCreator docCreator) : ReactiveObject
     private DelegateCommand? apply;
     public DelegateCommand Apply => apply ??= new DelegateCommand(() =>
     {
+        if (Order?.PrepaymentPercent + Order?.ExecutionPercent + Order?.ApprovalPercent != 100)
+        {
+            TabIndex = 2;
+            MessageBox.Show("Соотношение счетов не равно 100%", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
         Order!.SelectedServicesIds = Services?
             .Where(s => s.IsChecked)
             .Select(s => s.Id)
@@ -35,7 +42,28 @@ public class OrderDialogViewModel(IDocCreator docCreator) : ReactiveObject
         Order.Price = TotalPrice;
 
         OnSave?.Invoke(Order);
-    }, () => !string.IsNullOrWhiteSpace(Order?.Number));
+    }, () => OnApplyCanExecute());
+
+    private bool OnApplyCanExecute()
+    {
+        if (Order?.ParentId == null)
+        {
+            return !string.IsNullOrWhiteSpace(Order?.Number) &&
+            !string.IsNullOrWhiteSpace(Order?.Name) &&
+            !string.IsNullOrWhiteSpace(Order?.Address) &&
+            Order?.ExecutorId != null &&
+            Order?.CustomerId != null &&
+            Order?.Term > 0 &&
+            Order?.Square > 0;
+        }
+        else
+        {
+            return !string.IsNullOrWhiteSpace(Order?.Number) &&
+            Order?.Term > 0;
+        }
+        
+    }
+
 
     public void InitializeServices(ICollection<ServiceItem> services, ICollection<Guid>? selectedServiceIds)
     {
@@ -108,7 +136,7 @@ public class OrderDialogViewModel(IDocCreator docCreator) : ReactiveObject
             {
                 await docCreator.CreateAdditionalContractAsync(Order!, NeedStamp);
             }
-            
+
         }
         catch (Exception ex)
         {
@@ -127,7 +155,7 @@ public class OrderDialogViewModel(IDocCreator docCreator) : ReactiveObject
         {
             MessageBox.Show(ex.Message, "Ошибка создания документа", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
-        
+
     }, () => Order!.PrepaymentPercent > 0 && !string.IsNullOrWhiteSpace(Order!.PrepaymentBillNumber) && Order!.PrepaymentBillDate != null);
 
     private AsyncCommand? _createExecutionInvoiceCommand;
@@ -180,7 +208,7 @@ public class OrderDialogViewModel(IDocCreator docCreator) : ReactiveObject
         {
             MessageBox.Show(ex.Message, "Ошибка создания документа", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
-        
+
     }, () => ((Order!.ParentId == null && Order!.CustomerId != null && Order!.ExecutorId != null) || Order!.ParentId != null)
             && !string.IsNullOrWhiteSpace(Order.Number)
             && Order.StartDate != null
