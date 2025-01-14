@@ -163,6 +163,50 @@ namespace USProApplication.Services
                 doc.Replace("{NDS}", "-", true, true);
             }
 
+            if (order.PrepaymentPercent > 0)
+            {
+                var part = Math.Round((decimal)(order.Price! * order.PrepaymentPercent / 100), 2);
+                var tax = Math.Round((part * order.NDS / (100 + order.NDS)), 2);
+                var taxDescription = order.UsingNDS ? $", в том числе НДС {order.NDS}% {string.Format("{0:N2}", tax)} руб. ({DecimalConverter.ConvertDecimalToString(tax)})" : string.Empty;
+
+                doc.Replace("{FirstPaymentPart}", $"\nВ течение 3 (Трех) банковских дней с момента подписания настоящего Договора Заказчик обязан произвести предоплату в размере {order.PrepaymentPercent} % от стоимости работ, " +
+                    $"указанных в п. 4.1 настоящего Договора, что составляет {string.Format("{0:N2}", part)} руб. ({DecimalConverter.ConvertDecimalToString(part)}){taxDescription}.", true, true);
+            }
+            else
+            {
+                doc.Replace("{FirstPaymentPart}", string.Empty, true, true);
+            }
+
+            if (order.ExecutionPercent > 0)
+            {
+                var part = Math.Round((decimal)(order.Price! * order.ExecutionPercent / 100), 2);
+                var tax = Math.Round((part * order.NDS / (100 + order.NDS)), 2);
+                var taxDescription = order.UsingNDS ? $", в том числе НДС {order.NDS}% {string.Format("{0:N2}", tax)} руб. ({DecimalConverter.ConvertDecimalToString(tax)})" : string.Empty;
+
+                doc.Replace("{SecondPaymentPart}", $"\nВторую часть в размере {order.ExecutionPercent} % Заказчик должен внести в течении 2 (Двух) банковских дней после полного выполнения подрядчиком всех разделов проектной документации указанных в п. 1.2., " +
+                    $"что составляет {string.Format("{0:N2}", part)} руб. ({DecimalConverter.ConvertDecimalToString(part)}){taxDescription}.", true, true);
+            }
+            else
+            {
+                doc.Replace("{SecondPaymentPart}", string.Empty, true, true);
+            }
+
+            if (order.ApprovalPercent > 0)
+            {
+                var part = Math.Round((decimal)(order.Price! * order.ApprovalPercent / 100), 2);
+                var tax = Math.Round((part * order.NDS / (100 + order.NDS)), 2);
+                var taxDescription = order.UsingNDS ? $", в том числе НДС {order.NDS}% {string.Format("{0:N2}", tax)} руб. ({DecimalConverter.ConvertDecimalToString(tax)})" : string.Empty;
+
+                doc.Replace("{ThirdPaymentPart}", $"\nОставшиеся {order.ApprovalPercent} % от стоимости работ, указанных в п. 4.1. настоящего Договора, " +
+                    $"что составляет {string.Format("{0:N2}", part)} руб. ({DecimalConverter.ConvertDecimalToString(part)}){taxDescription}, " +
+                    $"Заказчик вносит в течение 3 (Трех) банковских дней после согласования проектной документации с арендодателем.", true, true);
+            }
+            else
+            {
+                doc.Replace("{ThirdPaymentPart}", string.Empty, true, true);
+            }
+
+
             try
             {
                 doc.SaveToFile(outputPath);
