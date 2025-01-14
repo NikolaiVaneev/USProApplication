@@ -55,7 +55,7 @@ namespace USProApplication.Services
 
             doc.Replace("{ContractNumber}", order.Number, true, true);
             doc.Replace("{ContractDate}", DateConverter.ConvertDateToString(order.StartDate), true, true);
-            doc.Replace("{Date}", DateConverter.ConvertDateToString(order.СompletionDate), true, true);
+            doc.Replace("{Date}", DateConverter.ConvertDateToString(DateTime.Now), true, true);
             doc.Replace("{Price}", string.Format("{0:N2}", order.Price), true, true);
             doc.Replace("{FullPrice}", DecimalConverter.ConvertDecimalToString(order.Price), true, true);
 
@@ -99,9 +99,8 @@ namespace USProApplication.Services
 
             if (!stamp) RemoveImages(doc);
 
-
             doc.Replace("{ContractNumber}", order.Number, true, true);
-            doc.Replace("{ContractDate}", $"{DateConverter.ConvertDateToString(order.StartDate)}", true, true);
+            doc.Replace("{ContractDate}", $"{DateConverter.ConvertDateToString(DateTime.Now)}", true, true);
             doc.Replace("{Address}", order.Address, true, true);
             doc.Replace("{Square}", GetNumberDescription(order.Square, true), true, true);
             doc.Replace("{Deadline}", GetNumberDescription(order.Term), true, true);
@@ -337,7 +336,7 @@ namespace USProApplication.Services
             doc.Replace("{Number}", order.Number, true, true);
             doc.Replace("{ContractNumber}", order.ParentOrder.Number, true, true);
             doc.Replace("{ContractDate}", $"{DateConverter.ConvertDateToString(order.ParentOrder.StartDate)}", true, true);
-            doc.Replace("{Date}", $"{DateConverter.ConvertDateToString(order.StartDate)}", true, true);
+            doc.Replace("{Date}", $"{DateConverter.ConvertDateToString(DateTime.Now)}", true, true);
             doc.Replace("{Address}", order.ParentOrder.Address, true, true);
             doc.Replace("{Square}", GetNumberDescription(order.ParentOrder.Square, true), true, true);
             doc.Replace("{Deadline}", GetNumberDescription(order.Term), true, true);
@@ -612,8 +611,6 @@ namespace USProApplication.Services
             doc.Replace("{Executor}", $"{executor.Name}, ИНН {executor.INN}, КПП {executor.KPP}, {executor.Address}", true, true);
             doc.Replace("{ExecutorShortName}", await morpherService.GetShortNameAsync(executor.Director, MorpherService.RussianCase.Nominative), true, true);
 
-
-
             try
             {
                 doc.SaveToFile(outputPath);
@@ -761,6 +758,7 @@ namespace USProApplication.Services
 
             return $"{term} ({string.Join(" ", parts)})";
         }
+    
         /// <summary>
         /// Получить описание НДС
         /// </summary>
