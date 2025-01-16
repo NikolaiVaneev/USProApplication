@@ -2,6 +2,7 @@
 using Spire.Doc;
 using Spire.Doc.Documents;
 using System.IO;
+using System.Linq;
 using System.Text;
 using USProApplication.DataBase.Entities;
 using USProApplication.Models;
@@ -13,6 +14,30 @@ namespace USProApplication.Services
 {
     public class DocCreator(ICounterpartyRepository counterpartyRepository, IBaseRepository<Service> serviceRepository) : IDocCreator
     {
+        private ICollection<ContractAttachemntBookmark> contractAttachemntBookmarks =
+        [
+            new ContractAttachemntBookmark("АПС_1", "АПС_2", "Автоматическая пожарная сигнализация", "АПС"),
+            new ContractAttachemntBookmark("АПТ_1", "АПТ_2", "Автоматическое пожаротушение", "АПТ"),
+            new ContractAttachemntBookmark("АР_1", "АР_2", "Архитектурно-планировочные решения", "АР"),
+            new ContractAttachemntBookmark("ВК_1", "ВК_2", "Водоснабжение и канализация", "ВК"),
+            new ContractAttachemntBookmark("ВН_1", "ВН_2", "Видеонаблюдение", "В"),
+            new ContractAttachemntBookmark("КР_1", "КР_2", "Конструктивные решения", "КР"),
+            new ContractAttachemntBookmark("ОВиК_1", "ОВиК_2", "Отопление, вентиляция и кондиционирование", "ОВиК"),
+            new ContractAttachemntBookmark("РАО_1", "РАО_2", "Расчет аварийного освещения", "РАО"),
+            new ContractAttachemntBookmark("РО_1", "РО_2", "Расчет общего освещения", "РО"),
+            new ContractAttachemntBookmark("СКС_1", "СКС_2", "Структурированная кабельная система", "СКС"),
+            new ContractAttachemntBookmark("СКУД_1", "СКУД_2", "Система контроля и управление доступом", "СКУД"),
+            new ContractAttachemntBookmark("СОУЭ_1", "СОУЭ_2", "Система оповещения и управления эвакуацией", "СОУЭ"),
+            new ContractAttachemntBookmark("СС_1", "СС_2", "Сети связи", "СС"),
+            new ContractAttachemntBookmark("ТХ_1", "ТХ_2", "Технологические решения", "ТХ"),
+            new ContractAttachemntBookmark("ЭОМ_1", "ЭОМ_2", "Электрооборудование и электроосвещение", "ЭОМ"),
+            new ContractAttachemntBookmark("СОСТ_1", "СОСТ_2", "Система охранно-тревожной сигнализации", "СОТС"),
+            new ContractAttachemntBookmark("СПА_1", "СПА_2", "Система пожарной автоматики", "СПА"),
+            new ContractAttachemntBookmark("ОТП_1", "ОТП_2", "Отопление", "ОТП"),
+            new ContractAttachemntBookmark("ВПВ_1", "ВПВ_2", "Внутренний противопожарный водопровод", "ВПВ"),
+            new ContractAttachemntBookmark("КМ_1", "КМ_2", "Конструкции металлические", "КМ"),
+        ];
+        
         public async Task CreateActAsync(OrderDTO order, bool stamp)
         {
             string templatePath = Path.Combine("Templates", "Act.docx");
@@ -239,7 +264,31 @@ namespace USProApplication.Services
 
             if (order.SelectedServicesIds != null)
             {
+                var allServices = await serviceRepository.GetAllAsync();
+                var usedService = allServices.Where(x => order.SelectedServicesIds.Contains(x.Id!.Value)).ToList();
+                var toRemoveAbbreviations = allServices.Except(usedService).Select(x => x.Abbreviation).ToList();
+                var toRemoveBookmarks = contractAttachemntBookmarks.Where(x => toRemoveAbbreviations.Contains(x.Abbreviation)).ToList();
+                
+                if (toRemoveBookmarks.Count > 0)
+                {
+                    foreach (var bookmark in toRemoveBookmarks)
+                    {
+                        var firstAppBookmark = doc.Bookmarks[bookmark.FirstAppBookmark];
+                        var secondAppBookmark = doc.Bookmarks[bookmark.SecondAppBookmark];
 
+                        BookmarksNavigator navigator = new(doc);
+                        if (firstAppBookmark != null) 
+                        {
+                            navigator.MoveToBookmark(firstAppBookmark.Name, true, true);
+                            navigator.DeleteBookmarkContent(true);
+                        };
+                        if (secondAppBookmark != null) 
+                        {
+                            navigator.MoveToBookmark(secondAppBookmark.Name, true, true);
+                            navigator.DeleteBookmarkContent(true);
+                        };
+                    }
+                }
             }
 
             var client = await counterpartyRepository.GetByIdAsync((Guid)order.CustomerId!);
@@ -252,6 +301,8 @@ namespace USProApplication.Services
 
             doc.Replace("{ExecutorPosition}", GetDirectorPosition(executor!.DirectorPosition, true), true, true);
             doc.Replace("{ExecutorShortName}", await morpherService.GetShortNameAsync(executor.Director, MorpherService.RussianCase.Nominative), true, true);
+
+
 
             try
             {
@@ -850,5 +901,13 @@ namespace USProApplication.Services
                 _ => throw new NotImplementedException()
             };
         }
+    }
+
+    public class ContractAttachemntBookmark(string fisrtBookmark, string secondBookmark, string name, string abbr)
+    {
+        public string FirstAppBookmark { get; } = fisrtBookmark;
+        public string SecondAppBookmark { get; } = secondBookmark;
+        public string Name { get; } = name;
+        public string Abbreviation { get; } = abbr;
     }
 }
