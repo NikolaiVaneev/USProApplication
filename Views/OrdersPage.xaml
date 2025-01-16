@@ -42,7 +42,7 @@
 
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Договор" Width="90" MaxWidth="90" MinWidth="90" Binding="{Binding ContractNo}" />
-                <DataGridTextColumn Header="Дата договора" Width="130" MaxWidth="130" Binding="{Binding ContractDate, StringFormat='dd.MM.yyyy'}"/>
+                <DataGridTextColumn Header="Дата договора" Width="125" MinWidth="125" MaxWidth="125" Binding="{Binding ContractDate, StringFormat='dd.MM.yyyy'}"/>
                 <DataGridTextColumn Header="Наименование" Width="auto" Binding="{Binding Name}" />
                 <DataGridTextColumn Header="Адрес" Width="*" Binding="{Binding Address}"/>
                 <DataGridTextColumn Header="Заказчик" Width="auto" Binding="{Binding Client}" MaxWidth="500"/>
