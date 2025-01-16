@@ -31,24 +31,24 @@
         <DataGrid Grid.Row="1" Margin="0 8 0 0"
                   AutoGenerateColumns="False"
                   CanUserAddRows="False"
+                  HorizontalScrollBarVisibility="Auto"
                   CanUserDeleteRows="False"
                   IsReadOnly="True"
                   ItemsSource="{Binding FilteredOrders}"
                   SelectedItem="{Binding SelectedOrder}"
                   SelectionMode="Single"
-                  RowDetailsVisibilityMode="VisibleWhenSelected"
+                  RowDetailsVisibilityMode="Visible"
                   utils:DataGridDoubleClickBehavior.Command="{Binding EditCommand}">
 
-            <!--RowDetailsVisibilityMode="Visible"-->
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Договор" Width="auto" Binding="{Binding ContractNo}" />
-                <DataGridTextColumn Header="Дата договора" Width="140" Binding="{Binding ContractDate, StringFormat='dd.MM.yyyy'}"/>
+                <DataGridTextColumn Header="Договор" Width="90" MaxWidth="90" MinWidth="90" Binding="{Binding ContractNo}" />
+                <DataGridTextColumn Header="Дата договора" Width="130" MaxWidth="130" Binding="{Binding ContractDate, StringFormat='dd.MM.yyyy'}"/>
                 <DataGridTextColumn Header="Наименование" Width="auto" Binding="{Binding Name}" />
-                <DataGridTextColumn Header="Адрес" Width="*" Binding="{Binding Address}" />
-                <DataGridTextColumn Header="Заказчик" Width="auto" Binding="{Binding Client}" />
+                <DataGridTextColumn Header="Адрес" Width="*" Binding="{Binding Address}"/>
+                <DataGridTextColumn Header="Заказчик" Width="auto" Binding="{Binding Client}" MaxWidth="500"/>
                 <DataGridTextColumn Header="Исполнитель" Width="auto" Binding="{Binding Executor}" />
                 <DataGridTextColumn Header="Счет" Width="auto" Binding="{Binding Bill}" />
-                <DataGridTextColumn Header="Статус" Width="110" Binding="{Binding Status}">
+                <DataGridTextColumn Header="Статус" Width="110" MinWidth="110" MaxWidth="110" Binding="{Binding Status}">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Style.Triggers>
@@ -63,40 +63,72 @@
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
             </DataGrid.Columns>
-
+            
             <DataGrid.RowDetailsTemplate>
                 <DataTemplate>
                     <ItemsControl ItemsSource="{Binding AdditionalOrders}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border BorderBrush="Gainsboro" BorderThickness="1 0 1 1" CornerRadius="3" Margin="14 0 0 0">
-                                    <Grid>
+                                <Border BorderBrush="Gainsboro" BorderThickness="1 0 1 1" CornerRadius="3" Opacity=".8">
+                                    <Grid Background="#33A2D3E3" OpacityMask="Black">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
 
-                                        <StackPanel Orientation="Horizontal" Grid.Column="0">
-                                            <TextBlock FontSize="13" Text="{Binding ContractNo}" Margin="8,0,0,0"/>
-                                            <TextBlock FontSize="13" Text="   от   " />
+                                        <StackPanel Orientation="Horizontal" Grid.Column="1" Margin="8 0 24 0">
+                                            <TextBlock FontSize="13" Text="{Binding ContractNo}"/>
+                                            <TextBlock FontSize="13" Text="  от  " />
                                             <TextBlock FontSize="13" Text="{Binding ContractDate, StringFormat='dd.MM.yyyy'}" />
                                         </StackPanel>
 
-                                        <TextBlock FontSize="13" Text="{Binding Bill}" Margin="0,0,5,0" Grid.Column="1" />
-                                        <TextBlock FontSize="13" Text="{Binding Status}" Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}" Margin="10,0,5,0" Grid.Column="2" />
-                                        <StackPanel Orientation="Horizontal" Grid.Column="3">
-                                            <Button Content="{materialDesign:PackIcon Pencil}" 
-                                                Width="25" Height="25" Padding="0"
-                                                Command="{Binding DataContext.EditAdditionalOrderCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
-                                                CommandParameter="{Binding}"/>
-                                            <Button Content="{materialDesign:PackIcon DeleteOutline}" 
-                                                Width="25" Height="25" Padding="0" 
-                                                Foreground="OrangeRed"
-                                                Command="{Binding DataContext.DeleteAdditionalOrderCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
-                                                CommandParameter="{Binding}"/>
-                                        </StackPanel>
+                                        <TextBlock FontSize="13" Text="{Binding Bill}" Margin="0,0,5,0" Grid.Column="2" />
+                                        <TextBlock FontSize="13" Text="{Binding Status}" Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}" Margin="10,0,10,0" Grid.Column="3" />
+
+                                        <Grid Grid.Column="4">
+                                            <Grid.Style>
+                                                <Style TargetType="Grid">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                    <Setter Property="RenderTransformOrigin" Value="1,0" />
+                                                    <Setter Property="RenderTransform">
+                                                        <Setter.Value>
+                                                            <TranslateTransform X="50" />
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible" />
+                                                            <DataTrigger.EnterActions>
+                                                                <BeginStoryboard>
+                                                                    <Storyboard>
+                                                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TranslateTransform.X)"
+                                                 From="50" To="0" Duration="0:0:0.3" />
+                                                                    </Storyboard>
+                                                                </BeginStoryboard>
+                                                            </DataTrigger.EnterActions>
+                                                            <DataTrigger.ExitActions>
+                                                                <BeginStoryboard>
+                                                                    <Storyboard>
+                                                                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TranslateTransform.X)"
+                                                 From="0" To="50" Duration="0:0:0.3" />
+                                                                    </Storyboard>
+                                                                </BeginStoryboard>
+                                                            </DataTrigger.ExitActions>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Grid.Style>
+
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button Content="{materialDesign:PackIcon Pencil}" Width="25" Height="25" Padding="0"
+                                                    Command="{Binding DataContext.EditAdditionalOrderCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"/>
+                                                <Button Content="{materialDesign:PackIcon DeleteOutline}" Width="25" Height="25" Padding="0" Foreground="OrangeRed"
+                                                    Command="{Binding DataContext.DeleteAdditionalOrderCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"/>
+                                            </StackPanel>
+                                        </Grid>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
