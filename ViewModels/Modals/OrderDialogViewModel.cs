@@ -26,7 +26,11 @@ public class OrderDialogViewModel(IDocCreator docCreator) : ReactiveObject
     private DelegateCommand? apply;
     public DelegateCommand Apply => apply ??= new DelegateCommand(() =>
     {
-        if (Order?.PrepaymentPercent + Order?.ExecutionPercent + Order?.ApprovalPercent != 100)
+        var prepPrecent = Order?.PrepaymentPercent != null ? Order?.PrepaymentPercent : 0;
+        var execPrecent = Order?.ExecutionPercent != null ? Order?.ExecutionPercent : 0;
+        var apprPrecent = Order?.ApprovalPercent != null ? Order?.ApprovalPercent : 0;
+
+        if (prepPrecent + execPrecent + apprPrecent != 100)
         {
             TabIndex = 2;
             MessageBox.Show("Соотношение счетов не равно 100%", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
