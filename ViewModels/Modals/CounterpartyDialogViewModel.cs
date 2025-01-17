@@ -7,24 +7,39 @@ using System.Windows;
 using USProApplication.DataBase.Entities;
 using USProApplication.Models;
 using USProApplication.Models.API;
+using USProApplication.Models.Repositories;
 using USProApplication.Utils;
 
 namespace USProApplication.ViewModels.Modals;
 
-public class CounterpartyDialogViewModel : ReactiveObject
+public class CounterpartyDialogViewModel(ICounterpartyRepository counterpartyRepository) : ReactiveObject
 {
     [Reactive] public CounterpartyDTO? Counterparty { get; set; }
     [Reactive] public bool IsBankInfoLoad { get; set; }
     [Reactive] public bool IsCounterpartyInfoLoad { get; set; }
+    public string? PreINN { get; set; } 
 
     public event Action<CounterpartyDTO?>? OnSave;
 
     public ObservableCollection<string> DirectorPositionDescriptions { get; } =
         new ObservableCollection<string>(EnumExtensions.GetDescriptions<DirectorPositions>());
 
-    private DelegateCommand? apply;
-    public DelegateCommand Apply => apply ??= new DelegateCommand(() =>
+    private AsyncCommand? apply;
+    public AsyncCommand Apply => apply ??= new AsyncCommand(async () =>
     {
+        if (PreINN != Counterparty!.INN)
+        {
+            var findedOrgName = await counterpartyRepository.CheckCounterpartyExistAsync(Counterparty!.INN);
+            if (!string.IsNullOrWhiteSpace(findedOrgName))
+            {
+                var result = MessageBox.Show($"С данным ИНН уже имеется контрагент \"{findedOrgName}\". Вы действительно хотите сохранить запись?", "Подтверждение сохранения", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result == MessageBoxResult.No)
+                {
+                    return;
+                }
+            }
+        }
+
         OnSave?.Invoke(Counterparty);
     }, () => !string.IsNullOrWhiteSpace(Counterparty?.Name));
 

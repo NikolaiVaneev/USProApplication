@@ -16,10 +16,6 @@
     <Window.Resources>
         <converters:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
     </Window.Resources>
-
-    <Window.DataContext>
-        <vm:CounterpartyDialogViewModel/>
-    </Window.DataContext>
    
     <Grid>
         <Grid.RowDefinitions>

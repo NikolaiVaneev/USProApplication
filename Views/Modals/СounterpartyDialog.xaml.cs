@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -17,6 +18,8 @@ namespace USProApplication.Views.Modals
         public СounterpartyDialog()
         {
             InitializeComponent();
+            DataContext = App.ServiceProvider?.GetService<CounterpartyDialogViewModel>()
+                  ?? throw new InvalidOperationException("Не удалось получить экземпляр CounterpartyDialogViewModel.");
             ((CounterpartyDialogViewModel)DataContext).OnSave += Save;
         }
 
@@ -30,6 +33,7 @@ namespace USProApplication.Views.Modals
         public bool ShowDialog(CounterpartyDTO counterparty, out CounterpartyDTO? result)
         {
             ((CounterpartyDialogViewModel)DataContext).Counterparty = counterparty;
+            ((CounterpartyDialogViewModel)DataContext).PreINN = counterparty.INN;
             result = null;
 
             if (ShowDialog() != true)

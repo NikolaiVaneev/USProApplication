@@ -17,6 +17,14 @@ public class CounterpartyRepository(IDbContextFactory<AppDbContext> _contextFact
         await context.SaveChangesAsync();
     }
 
+    public async Task<string?> CheckCounterpartyExistAsync(string? INN)
+    {
+        if (string.IsNullOrWhiteSpace(INN)) return null;
+
+        await using var context = _contextFactory.CreateDbContext();
+        return await context.Counterparties.Where(x => x.INN == INN).Select(x => x.Name).FirstOrDefaultAsync();
+    }
+
     public async Task DeleteAsync(Guid id)
     {
         await using var context = _contextFactory.CreateDbContext();

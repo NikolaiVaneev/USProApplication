@@ -48,6 +48,7 @@ public partial class App : Application
         services.AddScoped<CustomersViewModel>();
         services.AddScoped<OrdersViewModel>();
         services.AddScoped<OrderDialogViewModel>();
+        services.AddScoped<CounterpartyDialogViewModel>();
 
         services.AddScoped<IDocCreator, DocCreator>();
     }
