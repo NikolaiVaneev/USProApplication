@@ -24,13 +24,15 @@
         </Grid.RowDefinitions>
 
         <DockPanel Grid.Row="0" LastChildFill="True" Margin="0 0 0 8">
-            <Button Content="{materialDesign:PackIcon Plus}" DockPanel.Dock="Right"
-                    Command="{Binding AddCommand}"
-                    ToolTip="Добавить новую запись" Width="35" Margin="8 0 0 0" Padding="0"/>
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <Button Content="{materialDesign:PackIcon Plus}" 
+                        Command="{Binding AddCommand}" ToolTip="Добавить новую запись" Width="35" Padding="0"/>
+                <Button Content="{materialDesign:PackIcon Refresh}" Padding="0" Width="35" ToolTip="Обновить"
+                        Command="{Binding RefreshPage}"/>
+            </StackPanel>
             <TextBox FontSize="14" 
                      Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}" 
                      materialDesign:HintAssist.Hint="Поиск..." />
-            
         </DockPanel>
 
         <ProgressBar Grid.Row="1" IsIndeterminate="True"

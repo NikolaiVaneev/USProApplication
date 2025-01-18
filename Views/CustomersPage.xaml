@@ -14,21 +14,28 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <DockPanel Grid.Row="0" LastChildFill="True">
-            <Button Content="{materialDesign:PackIcon Plus}" DockPanel.Dock="Right"
-                    Command="{Binding AddCommand}"
-                    ToolTip="Добавить новую запись" Width="35" Margin="8 0 0 0" Padding="0"/>
+        <DockPanel Grid.Row="0" LastChildFill="True" Margin="0 0 0 8">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <Button Content="{materialDesign:PackIcon Plus}" 
+                        Command="{Binding AddCommand}" ToolTip="Добавить новую запись" Width="35" Padding="0"/>
+                <Button Content="{materialDesign:PackIcon Refresh}" Padding="0" Width="35" ToolTip="Обновить"
+                        Command="{Binding RefreshPage}"/>
+            </StackPanel>
+            
             <TextBox FontSize="14" 
                      Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}" 
                      materialDesign:HintAssist.Hint="Поиск..." />
-
         </DockPanel>
 
-        <DataGrid Grid.Row="1" Margin="0 8 0 0"
+        <ProgressBar Grid.Row="1" IsIndeterminate="True"
+             Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+        <DataGrid Grid.Row="2" 
                   AutoGenerateColumns="False"
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
@@ -85,7 +92,7 @@
             </DataGrid.ContextMenu>
         </DataGrid>
 
-        <TextBlock Grid.Row="2" 
+        <TextBlock Grid.Row="4" 
            Text="{Binding FilteredClients.Count, StringFormat=Всего записей: {0}}" />
     </Grid>
 </Page>

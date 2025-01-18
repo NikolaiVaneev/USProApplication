@@ -23,6 +23,7 @@ public class CustomersViewModel : ReactiveObject
     public ICommand AddCommand { get; }
     public ICommand EditCommand { get; }
     public ICommand DeleteCommand { get; }
+    public ICommand RefreshPage { get; }
 
     private readonly ICounterpartyRepository _repo;
     private readonly IMapper _mapper;
@@ -31,7 +32,7 @@ public class CustomersViewModel : ReactiveObject
         _mapper = mapper;
         _repo = repository;
 
-        LoadClientsAsync();
+        _ = LoadClientsAsync();
 
         var filterApplier = this.WhenAnyValue(x => x.Filter)
             .Throttle(TimeSpan.FromMilliseconds(300))
@@ -40,9 +41,10 @@ public class CustomersViewModel : ReactiveObject
         AddCommand = new AsyncCommand(AddCounterparty);
         EditCommand = new AsyncCommand(EditCounterparty, CanEditOrDelete);
         DeleteCommand = new AsyncCommand(DeleteCounterparty, CanEditOrDelete);
+        RefreshPage = new AsyncCommand(LoadClientsAsync);
     }
 
-    private async void LoadClientsAsync()
+    private async Task LoadClientsAsync()
     {
         IsLoading = true;
         try

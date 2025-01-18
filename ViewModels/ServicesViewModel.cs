@@ -22,6 +22,7 @@ public class ServicesViewModel : ReactiveObject
     public ICommand AddCommand { get; }
     public ICommand EditCommand { get; }
     public ICommand DeleteCommand { get; }
+    public ICommand RefreshPage { get; }
 
     private readonly IBaseRepository<Service> _repo;
 
@@ -29,7 +30,7 @@ public class ServicesViewModel : ReactiveObject
     {
         _repo = repository;
 
-        LoadServicesAsync();
+        _ = LoadServicesAsync();
 
         // Подписка на изменения фильтра
         this.WhenAnyValue(x => x.Filter)
@@ -39,9 +40,10 @@ public class ServicesViewModel : ReactiveObject
         AddCommand = new AsyncCommand(AddServiceAsync);
         EditCommand = new AsyncCommand(EditServiceAsync, CanEditOrDelete);
         DeleteCommand = new AsyncCommand(DeleteServiceAsync, CanEditOrDelete);
+        RefreshPage = new AsyncCommand(LoadServicesAsync);
     }
 
-    private async void LoadServicesAsync()
+    private async Task LoadServicesAsync()
     {
         IsLoading = true;
         try

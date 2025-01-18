@@ -27,6 +27,8 @@ public class OrdersViewModel : ReactiveObject
     public ICommand EditAdditionalOrderCommand { get; }
     public ICommand DeleteAdditionalOrderCommand { get; }
 
+    public ICommand RefreshPage { get; }
+
     private readonly IOrdersRepository _repo;
     private readonly IDirectoryRepository _directoryRepository;
     private readonly IMapper _mapper;
@@ -37,7 +39,7 @@ public class OrdersViewModel : ReactiveObject
         _directoryRepository = directoryRepository;
         _mapper = mapper;
 
-        LoadOrdersAsync();
+        _ = LoadOrdersAsync();
 
         // Подписка на изменения фильтра
         this.WhenAnyValue(x => x.Filter)
@@ -50,6 +52,7 @@ public class OrdersViewModel : ReactiveObject
         AddAdditionalOrder = new AsyncCommand(AddAdditionalOrderAsync, CanAddAdditionalOrder);
         EditAdditionalOrderCommand = new RelayCommand(EditAdditionalOrder);
         DeleteAdditionalOrderCommand = new RelayCommand(DeleteAdditionalOrder);
+        RefreshPage = new AsyncCommand(LoadOrdersAsync);
     }
 
     private async void EditAdditionalOrder(object parameter)
