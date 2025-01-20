@@ -525,9 +525,9 @@ namespace USProApplication.Services
             {
                 doc.Replace("{ClientName}", client.Name, true, true);
                 doc.Replace("{ClientAddress}", client.Address, true, true);
-                doc.Replace("{ClientINN}", client.INN, true, true);
-                doc.Replace("{ClientKPP}", client.KPP, true, true);
-                doc.Replace("{Email}", order.Email, true, true);
+                doc.Replace("{ClientINN}", client.INN != null ? client.INN : string.Empty, true, true);
+                doc.Replace("{ClientKPP}", client.KPP != null ? client.KPP : string.Empty, true, true);
+                doc.Replace("{Email}", order.Email != null ? order.Email : string.Empty, true, true);
             }
 
             var executor = await counterpartyRepository.GetByIdAsync((Guid)order.ExecutorId!);
