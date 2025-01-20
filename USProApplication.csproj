@@ -11,6 +11,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\Icons\telegram.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="us_icon (2).ico" />
   </ItemGroup>
 
@@ -45,6 +49,7 @@
     <Folder Include="Resources\Templates\" />
 	<Resource Include="Fonts\Gilroy-Regular.ttf" />
 	<Resource Include="Fonts\Gilroy-Bold.ttf" />
+	<Resource Include="Resources\Icons\telegram.png" />
   </ItemGroup>
 
   <ItemGroup>

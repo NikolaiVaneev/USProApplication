@@ -23,7 +23,8 @@ public class MainViewModel : ReactiveObject
         [
             new() { Title = "Заказы", View = new OrdersPage(), Icon = PackIconKind.ShoppingCart },
             new() { Title = "Контрагенты", View = new CustomersPage(), Icon = PackIconKind.Account },
-            new() { Title = "Услуги", View = new ServicesPage(), Icon = PackIconKind.Toolbox }
+            new() { Title = "Услуги", View = new ServicesPage(), Icon = PackIconKind.Toolbox },
+            new() { Title = "О программе", View = new InfoPage(), Icon = PackIconKind.InformationVariantCircleOutline }
         ];
 
         // Установить начальный выбранный элемент, если он есть

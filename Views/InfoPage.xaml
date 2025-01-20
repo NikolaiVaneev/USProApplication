@@ -1,0 +1,46 @@
+﻿<Page x:Class="USProApplication.Views.InfoPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:USProApplication.Views"
+      mc:Ignorable="d" 
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="InfoPage">
+
+    <Grid>
+        <materialDesign:Card Width="230" Height="140" Opacity="0.9" Padding="8">
+            <StackPanel>
+                <TextBlock Text="Связь с разработчиком"/>
+                <StackPanel Orientation="Horizontal" Margin="5 0 0 0">
+                    <materialDesign:PackIcon Kind="Whatsapp" Foreground="Green" VerticalAlignment="Center"/>
+                    <TextBlock FontSize="13" Margin="5 0 0 0">
+                        <Hyperlink NavigateUri="https://wa.me/79625566159" RequestNavigate="Hyperlink_RequestNavigate">
+                            +7 (962) 556-61-59
+                        </Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="5 0 0 0">
+                    <Image Source="/Resources/Icons/telegram.png" Width="15"/>
+                    <TextBlock FontSize="13" Margin="5 0 0 0">
+                           <Hyperlink NavigateUri="https://t.me/n_vaneev" RequestNavigate="Hyperlink_RequestNavigate">
+                                @n_vaneev
+                            </Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+                <Separator/>
+                <TextBlock Text="Исходный код приложения"/>
+                <StackPanel Orientation="Horizontal" Margin="5 0 0 0">
+                    <materialDesign:PackIcon Kind="Github" Foreground="Gray" VerticalAlignment="Center"/>
+                    <TextBlock FontSize="13" Margin="5 0 0 0">
+                            <Hyperlink NavigateUri="https://github.com/NikolaiVaneev/USProApplication" RequestNavigate="Hyperlink_RequestNavigate">
+                                GitHub
+                            </Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+            </StackPanel>
+            
+        </materialDesign:Card>
+    </Grid>
+</Page>
