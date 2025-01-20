@@ -67,8 +67,11 @@ namespace USProApplication.Services
 
                 doc.Replace("{Address}", order.Address, true, true);
                 doc.Replace("{NDS}", GetNDSDescription(order), true, true);
-                doc.Replace("{AdditionalContractInfo}", string.Empty, true, true);
+                doc.Replace("{AdditionalContractInfo}", "по ", true, true);
                 doc.Replace("{ContractNumber}", order.Number, true, true);
+
+                doc.Replace("{DSContractInfo}", ".1. договора ", true, true);
+                doc.Replace("{ContractPoint}", "1.1 договора", true, true);
             }
             else
             {
@@ -76,10 +79,13 @@ namespace USProApplication.Services
                 client = await counterpartyRepository.GetByIdAsync((Guid)order.ParentOrder!.CustomerId!);
                 executor = await counterpartyRepository.GetByIdAsync((Guid)order.ParentOrder!.ExecutorId!);
 
-                doc.Replace("{AdditionalContractInfo}", $"по Дополнительному соглашению №{order.Number}\n", true, true);
+                doc.Replace("{AdditionalContractInfo}", $"по Дополнительному соглашению №{order.Number}\n к", true, true);
                 doc.Replace("{Address}", order.ParentOrder.Address, true, true);
                 doc.Replace("{NDS}", GetNDSDescription(order.ParentOrder), true, true);
                 doc.Replace("{ContractNumber}", order.ParentOrder.Number, true, true);
+
+                doc.Replace("{DSContractInfo}", $" Дополнительного соглашения №{order.Number} от {DateConverter.ConvertDateToString(order.StartDate)} г. к", true, true);
+                doc.Replace("{ContractPoint}", $"2. Дополнительного соглашения №{order.Number} от {DateConverter.ConvertDateToString(order.StartDate)} г. к Договору ", true, true);
             }
 
             
