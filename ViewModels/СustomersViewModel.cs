@@ -66,12 +66,11 @@ public class CustomersViewModel : ReactiveObject
         // Применяем фильтр к полной коллекции и обновляем FilteredServices
         var filtered = string.IsNullOrWhiteSpace(Filter)
             ? Clients
-        : new ObservableCollection<ClientShortInfo>(
-                Clients.Where(service =>
-                    service.Name.Contains(Filter, StringComparison.OrdinalIgnoreCase) ||
-                    service.Address.Contains(Filter, StringComparison.OrdinalIgnoreCase) ||
-                    (service.ChiefFullName?.Contains(Filter, StringComparison.OrdinalIgnoreCase) ?? false))
-              );
+            : new ObservableCollection<ClientShortInfo>(Clients.Where(service =>
+                service.Name.Contains(Filter, StringComparison.OrdinalIgnoreCase) ||
+                (service.Address != null && service.Address.Contains(Filter, StringComparison.OrdinalIgnoreCase)) ||
+                (service.ChiefFullName?.Contains(Filter, StringComparison.OrdinalIgnoreCase) ?? false)
+            ));
 
         FilteredClients = filtered;
     }
