@@ -1,12 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using Dadata;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System.Collections.ObjectModel;
-using System.Net.Http;
 using System.Windows;
 using USProApplication.DataBase.Entities;
 using USProApplication.Models;
-using USProApplication.Models.API;
 using USProApplication.Models.Repositories;
 using USProApplication.Utils;
 
@@ -17,7 +15,7 @@ public class CounterpartyDialogViewModel(ICounterpartyRepository counterpartyRep
     [Reactive] public CounterpartyDTO? Counterparty { get; set; }
     [Reactive] public bool IsBankInfoLoad { get; set; }
     [Reactive] public bool IsCounterpartyInfoLoad { get; set; }
-    public string? PreINN { get; set; } 
+    public string? PreINN { get; set; }
 
     public event Action<CounterpartyDTO?>? OnSave;
 
@@ -53,59 +51,44 @@ public class CounterpartyDialogViewModel(ICounterpartyRepository counterpartyRep
 
         try
         {
-            // Создаем клиент для HTTP-запроса
-            using var httpClient = new HttpClient();
+            var token = "ebd243812ca0e027a95fe554097d95acd5f9d822";
+            var api = new SuggestClientAsync(token);
+            var result = await api.FindParty(Counterparty?.INN);
 
-            // Формируем URL запроса
-            string url = $"https://api.ofdata.ru/v2/company?key=dPaSrxqECeDOIYdB&inn={Counterparty.INN}";
-
-            // Выполняем запрос и парсим результат
-            HttpResponseMessage response = await httpClient.GetAsync(url);
-            if (!response.IsSuccessStatusCode)
+            if (result.suggestions.Count > 0)
             {
-                ShowWarning("Не удалось получить данные о контрагенте. Проверьте соединение или попробуйте позже.");
-                return;
+                // Проверяем существующие значения
+                bool hasExistingValues = !string.IsNullOrWhiteSpace(Counterparty.Name) ||
+                                         !string.IsNullOrWhiteSpace(Counterparty.OGRN) ||
+                                         !string.IsNullOrWhiteSpace(Counterparty.KPP) ||
+                                         !string.IsNullOrWhiteSpace(Counterparty.Address) ||
+                                         !string.IsNullOrWhiteSpace(Counterparty.Director);
+
+                // Предупреждение об изменении существующих данных
+                if (hasExistingValues)
+                {
+                    bool userConfirmed = ShowConfirmationDialog("Данные о контрагенте уже заполнены. Вы уверены, что хотите их перезаписать?");
+                    if (!userConfirmed)
+                        return;
+                }
+
+                var companyData = result.suggestions[0];
+
+                // Заполняем свойства
+                Counterparty.Name = companyData.data.name.full_with_opf;
+                Counterparty.OGRN = companyData.data.ogrn;
+                Counterparty.KPP = companyData.data.kpp;
+                Counterparty.Address = companyData.data.address.value;
+                Counterparty.Director = companyData.data.management.name;
+                Counterparty.DirectorPosition = MapDirectorPosition(companyData.data.management.post);
+
+                this.RaisePropertyChanged(nameof(Counterparty));
             }
-
-            string responseContent = await response.Content.ReadAsStringAsync();
-            var companyData = JsonConvert.DeserializeObject<CompanyApiResponse>(responseContent);
-
-            if (companyData?.Data!.ИНН == null)
+            else
             {
                 ShowWarning("Данные о контрагенте не найдены.");
                 return;
             }
-
-            // Проверяем существующие значения
-            bool hasExistingValues = !string.IsNullOrWhiteSpace(Counterparty.Name) ||
-                                     !string.IsNullOrWhiteSpace(Counterparty.OGRN) ||
-                                     !string.IsNullOrWhiteSpace(Counterparty.KPP) ||
-                                     !string.IsNullOrWhiteSpace(Counterparty.Address) ||
-                                     !string.IsNullOrWhiteSpace(Counterparty.Director);
-
-            // Предупреждение об изменении существующих данных
-            if (hasExistingValues)
-            {
-                bool userConfirmed = ShowConfirmationDialog("Данные о контрагенте уже заполнены. Вы уверены, что хотите их перезаписать?");
-                if (!userConfirmed)
-                    return;
-            }
-
-            // Заполняем свойства
-            Counterparty.Name = companyData.Data.НаимСокр;
-            Counterparty.OGRN = companyData.Data.ОГРН;
-            Counterparty.KPP = companyData.Data.КПП;
-            Counterparty.Address = companyData.Data.ЮрАдрес?.АдресРФ;
-
-            var director = companyData.Data.Руковод?.FirstOrDefault();
-
-            if (director != null)
-            {
-                Counterparty.Director = director.ФИО;
-                string directorPositionName = director.НаимДолжн ?? string.Empty;
-                Counterparty.DirectorPosition = MapDirectorPosition(directorPositionName);
-            }
-            this.RaisePropertyChanged(nameof(Counterparty));
         }
         catch (Exception ex)
         {
@@ -127,44 +110,36 @@ public class CounterpartyDialogViewModel(ICounterpartyRepository counterpartyRep
 
         try
         {
-            using var httpClient = new HttpClient();
+            var token = "ebd243812ca0e027a95fe554097d95acd5f9d822";
+            var api = new SuggestClientAsync(token);
+            var result = await api.FindBank(Counterparty?.BIK);
 
-            // Формируем URL запроса
-            string url = $"https://api.ofdata.ru/v2/bank?key=dPaSrxqECeDOIYdB&bic={Counterparty.BIK}";
-
-            // Выполняем запрос и парсим результат
-            HttpResponseMessage response = await httpClient.GetAsync(url);
-            if (!response.IsSuccessStatusCode)
+            if (result.suggestions.Count > 0)
             {
-                // Ошибка подключения или ответа API
-                ShowWarning("Не удалось получить данные о банке. Проверьте соединение или попробуйте позже.");
-                return;
+                // Проверяем существующие значения
+                bool hasExistingValues = !string.IsNullOrWhiteSpace(Counterparty.Bank) || !string.IsNullOrWhiteSpace(Counterparty.CorrAccount);
+
+                // Предупреждение об изменении существующих данных
+                if (hasExistingValues)
+                {
+                    bool userConfirmed = ShowConfirmationDialog("Данные о банке уже заполнены. Вы уверены, что хотите их перезаписать?");
+                    if (!userConfirmed)
+                        return;
+                }
+
+                var bankData = result.suggestions[0];
+
+                // Заполняем свойства
+                Counterparty.Bank = $"{bankData.data.name.payment} {bankData.data.address.value}";
+                Counterparty.CorrAccount = bankData.data.correspondent_account;
+
+                this.RaisePropertyChanged(nameof(Counterparty));
             }
-
-            string responseContent = await response.Content.ReadAsStringAsync();
-            var bankData = JsonConvert.DeserializeObject<BankApiResponse>(responseContent);
-
-            if (bankData?.Data!.БИК == null)
+            else
             {
                 ShowWarning("Данные о банке не найдены.");
                 return;
             }
-
-            // Проверяем существующие значения
-            bool hasExistingValues = !string.IsNullOrWhiteSpace(Counterparty.Bank) || !string.IsNullOrWhiteSpace(Counterparty.CorrAccount);
-
-            // Предупреждение об изменении существующих данных
-            if (hasExistingValues)
-            {
-                bool userConfirmed = ShowConfirmationDialog("Данные о банке уже заполнены. Вы уверены, что хотите их перезаписать?");
-                if (!userConfirmed)
-                    return;
-            }
-
-            // Заполняем свойства
-            Counterparty.Bank = $"{bankData.Data.Наим} {bankData.Data.Адрес}";
-            Counterparty.CorrAccount = bankData?.Data?.КорСчет?.Номер;
-            this.RaisePropertyChanged(nameof(Counterparty));
         }
         catch (Exception ex)
         {
