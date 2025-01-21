@@ -14,7 +14,7 @@ public class Counterparty : BaseEntity
     public string Name { get; set; }
 
     [Comment("ИНН")]
-    [MaxLength(10)]
+    [MaxLength(12)]
     public string? INN { get; set; }
 
     [Comment("ОГРН")]

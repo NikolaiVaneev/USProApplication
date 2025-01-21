@@ -37,7 +37,7 @@
                         <TextBlock Text="ИНН" FontSize="14"/>
                         <TextBox VerticalAlignment="Center" Margin="6 0 0 0"
                                  PreviewTextInput="TextBox_PreviewTextInput"
-                                 MaxLength="10"
+                                 MaxLength="12"
                                  HorizontalContentAlignment="Center"
                                  Text="{Binding Counterparty.INN, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  FontSize="14"/>
