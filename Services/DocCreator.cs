@@ -165,13 +165,13 @@ namespace USProApplication.Services
             var morpherService = new MorpherService();
 
             doc.Replace("{ClientOrg}", client!.Name, true, true);
-            doc.Replace("{ClientFullName}", await morpherService.GetDeclensionAsync(client.Director, MorpherService.RussianCase.Accusative), true, true);
+            doc.Replace("{ClientFullName}", await morpherService.GetDeclensionAsync(client.Director, MorpherService.RussianCase.Genitive), true, true);
             doc.Replace("{ClientPosition}", GetDirectorPosition(client.DirectorPosition, false), true, true);
             doc.Replace("{ClientShortName}", await morpherService.GetShortNameAsync(client.Director, MorpherService.RussianCase.Nominative), true, true);
             doc.Replace("{ClientPositionI}", GetDirectorPosition(client.DirectorPosition, true), true, true);
 
             doc.Replace("{ExecutorOrg}", executor!.Name, true, true);
-            doc.Replace("{ExecutorFullName}", await morpherService.GetDeclensionAsync(executor.Director, MorpherService.RussianCase.Accusative), true, true);
+            doc.Replace("{ExecutorFullName}", await morpherService.GetDeclensionAsync(executor.Director, MorpherService.RussianCase.Genitive), true, true);
             doc.Replace("{ExecutorPosition}", GetDirectorPosition(executor.DirectorPosition, false), true, true);
             doc.Replace("{ExecutorPositionI}", GetDirectorPosition(executor.DirectorPosition, true), true, true);
             doc.Replace("{ExecutorShortName}", await morpherService.GetShortNameAsync(executor.Director, MorpherService.RussianCase.Nominative), true, true);
