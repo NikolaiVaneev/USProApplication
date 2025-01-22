@@ -72,15 +72,15 @@ public class CounterpartyDialogViewModel(ICounterpartyRepository counterpartyRep
                         return;
                 }
 
-                var companyData = result.suggestions[0];
+                var companyData = result.suggestions[0].data;
 
                 // Заполняем свойства
-                Counterparty.Name = companyData.data.name.full_with_opf;
-                Counterparty.OGRN = companyData.data.ogrn;
-                Counterparty.KPP = companyData.data.kpp;
-                Counterparty.Address = companyData.data.address.value;
-                Counterparty.Director = companyData.data.management.name;
-                Counterparty.DirectorPosition = MapDirectorPosition(companyData.data.management.post);
+                Counterparty.Name = companyData.name.full_with_opf;
+                Counterparty.OGRN = companyData.ogrn;
+                Counterparty.KPP = companyData.kpp;
+                Counterparty.Address = companyData.address.value;
+                Counterparty.Director = companyData.management != null ? companyData.management.name : companyData.fio != null ? $"{companyData.fio.surname} {companyData.fio.name} {companyData.fio.patronymic}" : "";
+                Counterparty.DirectorPosition = companyData.management != null ? MapDirectorPosition(companyData.management.post) : DirectorPositions.None;
 
                 this.RaisePropertyChanged(nameof(Counterparty));
             }
