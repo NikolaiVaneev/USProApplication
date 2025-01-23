@@ -72,6 +72,7 @@ namespace USProApplication.Services
 
                 doc.Replace("{DSContractInfo}", ".1. договора ", true, true);
                 doc.Replace("{ContractPoint}", "1.1 договора", true, true);
+                doc.Replace("{ContractDate}", DateConverter.ConvertDateToString(order.StartDate), true, true);
             }
             else
             {
@@ -86,10 +87,9 @@ namespace USProApplication.Services
 
                 doc.Replace("{DSContractInfo}", $" Дополнительного соглашения №{order.Number} от {DateConverter.ConvertDateToString(order.StartDate)} г. к", true, true);
                 doc.Replace("{ContractPoint}", $"2. Дополнительного соглашения №{order.Number} от {DateConverter.ConvertDateToString(order.StartDate)} г. к Договору ", true, true);
+                doc.Replace("{ContractDate}", DateConverter.ConvertDateToString(order.ParentOrder.StartDate), true, true);
             }
-
             
-            doc.Replace("{ContractDate}", DateConverter.ConvertDateToString(order.StartDate), true, true);
             doc.Replace("{Date}", DateConverter.ConvertDateToString(DateTime.Now), true, true);
             doc.Replace("{Price}", string.Format("{0:N2}", order.Price), true, true);
             doc.Replace("{FullPrice}", DecimalConverter.ConvertDecimalToString(order.Price), true, true);
