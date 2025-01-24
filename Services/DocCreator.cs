@@ -2,7 +2,6 @@
 using Spire.Doc;
 using Spire.Doc.Documents;
 using System.IO;
-using System.Linq;
 using System.Text;
 using USProApplication.DataBase.Entities;
 using USProApplication.Models;
@@ -37,7 +36,7 @@ namespace USProApplication.Services
             new ContractAttachemntBookmark("ВПВ_1", "ВПВ_2", "Внутренний противопожарный водопровод", "ВПВ"),
             new ContractAttachemntBookmark("КМ_1", "КМ_2", "Конструкции металлические", "КМ"),
         ];
-        
+
         public async Task CreateActAsync(OrderDTO order, bool stamp)
         {
             string templatePath = Path.Combine("Templates", "Act.docx");
@@ -89,7 +88,7 @@ namespace USProApplication.Services
                 doc.Replace("{ContractPoint}", $"2. Дополнительного соглашения №{order.Number} от {DateConverter.ConvertDateToString(order.StartDate)} г. к Договору ", true, true);
                 doc.Replace("{ContractDate}", DateConverter.ConvertDateToString(order.ParentOrder.StartDate), true, true);
             }
-            
+
             doc.Replace("{Date}", DateConverter.ConvertDateToString(DateTime.Now), true, true);
             doc.Replace("{Price}", string.Format("{0:N2}", order.Price), true, true);
             doc.Replace("{FullPrice}", DecimalConverter.ConvertDecimalToString(order.Price), true, true);
@@ -253,7 +252,6 @@ namespace USProApplication.Services
 
             await CreateContractAttachments(order);
         }
-
         private async Task CreateContractAttachments(OrderDTO order)
         {
             string templatePath = Path.Combine("Templates", "ContractAttachment.docx");
@@ -278,7 +276,7 @@ namespace USProApplication.Services
                 var usedService = allServices.Where(x => order.SelectedServicesIds.Contains(x.Id!.Value)).ToList();
                 var toRemoveAbbreviations = allServices.Except(usedService).Select(x => x.Abbreviation).ToList();
                 var toRemoveBookmarks = contractAttachemntBookmarks.Where(x => toRemoveAbbreviations.Contains(x.Abbreviation)).ToList();
-                
+
                 if (toRemoveBookmarks.Count > 0)
                 {
                     foreach (var bookmark in toRemoveBookmarks)
@@ -287,12 +285,12 @@ namespace USProApplication.Services
                         var secondAppBookmark = doc.Bookmarks[bookmark.SecondAppBookmark];
 
                         BookmarksNavigator navigator = new(doc);
-                        if (firstAppBookmark != null) 
+                        if (firstAppBookmark != null)
                         {
                             navigator.MoveToBookmark(firstAppBookmark.Name, true, true);
                             navigator.DeleteBookmarkContent(true);
                         };
-                        if (secondAppBookmark != null) 
+                        if (secondAppBookmark != null)
                         {
                             navigator.MoveToBookmark(secondAppBookmark.Name, true, true);
                             navigator.DeleteBookmarkContent(true);
@@ -608,7 +606,7 @@ namespace USProApplication.Services
                     break;
             }
 
-            doc.Replace("{Contract}", $"{order.Number} от {order.StartDate:dd.MM.yyyy} г.", true, true);
+            
             doc.Replace("{Number}", number, true, true);
 
             doc.Replace("{Price}", string.Format("{0:N2}", price), true, true);
@@ -619,6 +617,8 @@ namespace USProApplication.Services
             CounterpartyDTO? client;
             if (order.ParentId == null)
             {
+                doc.Replace("{AdditionalOrderReason}", string.Empty, true, true);
+                doc.Replace("{Contract}", $"{order.Number} от {order.StartDate:dd.MM.yyyy} г.", true, true);
                 doc.Replace("{Object}", order.Name, true, true);
                 doc.Replace("{AdditionalOrder}", string.Empty, true, true);
 
@@ -639,6 +639,8 @@ namespace USProApplication.Services
             }
             else
             {
+                doc.Replace("{AdditionalOrderReason}", $"Дополнительное соглашение №{order.Number} от {order.StartDate:dd.MM.yyyy} г. к договору ", true, true);
+                doc.Replace("{Contract}", $"{order.ParentOrder!.Number} от {order.ParentOrder!.StartDate:dd.MM.yyyy} г.", true, true);
                 doc.Replace("{Object}", order.ParentOrder!.Name, true, true);
                 doc.Replace("{AdditionalOrder}", $"доп. соглашению № {order.Number} от {order.StartDate:dd.MM.yyyy} по ", true, true);
 
