@@ -107,6 +107,7 @@ namespace USProApplication.Services
 
             try
             {
+                outputPath = outputPath.Replace("\"", "");
                 doc.SaveToFile(outputPath);
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(outputPath) { UseShellExecute = true });
             }
@@ -242,6 +243,7 @@ namespace USProApplication.Services
 
             try
             {
+                outputPath = outputPath.Replace("\"", "");
                 doc.SaveToFile(outputPath);
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(outputPath) { UseShellExecute = true });
             }
@@ -314,6 +316,7 @@ namespace USProApplication.Services
 
             try
             {
+                outputPath = outputPath.Replace("\"", "");
                 doc.SaveToFile(outputPath);
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(outputPath) { UseShellExecute = true });
             }
@@ -473,6 +476,7 @@ namespace USProApplication.Services
 
             try
             {
+                outputPath = outputPath.Replace("\"", "");
                 doc.SaveToFile(outputPath);
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(outputPath) { UseShellExecute = true });
             }
@@ -555,6 +559,7 @@ namespace USProApplication.Services
 
             try
             {
+                outputPath = outputPath.Replace("\"", "");
                 doc.SaveToFile(outputPath);
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(outputPath) { UseShellExecute = true });
             }
@@ -676,6 +681,7 @@ namespace USProApplication.Services
 
             try
             {
+                outputPath = outputPath.Replace("\"", "");
                 doc.SaveToFile(outputPath);
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(outputPath) { UseShellExecute = true });
             }
@@ -756,6 +762,7 @@ namespace USProApplication.Services
             // Сохранение документа
             try
             {
+                outputPath = outputPath.Replace("\"", "");
                 FileInfo outputFile = new(outputPath);
                 package.SaveAs(outputFile);
 
