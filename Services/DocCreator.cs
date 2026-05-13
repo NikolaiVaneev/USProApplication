@@ -1,4 +1,5 @@
-﻿using OfficeOpenXml;
+﻿using MaterialDesignThemes.Wpf;
+using OfficeOpenXml;
 using Spire.Doc;
 using Spire.Doc.Documents;
 using System.IO;
@@ -13,6 +14,9 @@ namespace USProApplication.Services
 {
     public class DocCreator(ICounterpartyRepository counterpartyRepository, IBaseRepository<Service> serviceRepository) : IDocCreator
     {
+        private const string USPro_INN = "7703625087";
+        private const string USProject_INN = "9725027246";
+
         private ICollection<ContractAttachemntBookmark> contractAttachemntBookmarks =
         [
             new ContractAttachemntBookmark("АПС_1", "АПС_2", "Автоматическая пожарная сигнализация", "АПС"),
@@ -93,6 +97,24 @@ namespace USProApplication.Services
             doc.Replace("{Price}", string.Format("{0:N2}", order.Price), true, true);
             doc.Replace("{FullPrice}", DecimalConverter.ConvertDecimalToString(order.Price), true, true);
 
+            if (order.SelectedServicesIds != null)
+            {
+                var services = new StringBuilder();
+                var servicesCollection = await serviceRepository.GetAllAsync();
+                foreach (var serviceId in order.SelectedServicesIds)
+                {
+                    var service = servicesCollection.FirstOrDefault( s => s.Id == serviceId );
+
+                    if (service != null)
+                    {
+                        services.Append( $"- Раздел «{service.Name}»,\n" );
+                    }
+                }
+                services.Append( "- Согласование проектной документации с Арендодателем." );
+
+                doc.Replace( "{Services}", services.ToString(), true, true );
+            }
+
             var morpherService = new MorpherService();
 
             doc.Replace("{ClientOrg}", client!.Name, true, true);
@@ -158,23 +180,34 @@ namespace USProApplication.Services
                 doc.Replace("{Services}", services.ToString(), true, true);
             }
 
-
             var client = await counterpartyRepository.GetByIdAsync((Guid)order.CustomerId!);
             var executor = await counterpartyRepository.GetByIdAsync((Guid)order.ExecutorId!);
 
             var morpherService = new MorpherService();
 
+            // Клиент
             doc.Replace("{ClientOrg}", client!.Name, true, true);
+            doc.Replace("{ClientNamedAs}", GetNamedAsDescription( client ), true, true);
             doc.Replace("{ClientFullName}", await morpherService.GetDeclensionAsync(client.Director, MorpherService.RussianCase.Genitive), true, true);
             doc.Replace("{ClientPosition}", GetDirectorPosition(client.DirectorPosition, false), true, true);
             doc.Replace("{ClientShortName}", await morpherService.GetShortNameAsync(client.Director, MorpherService.RussianCase.Nominative), true, true);
             doc.Replace("{ClientPositionI}", GetDirectorPosition(client.DirectorPosition, true), true, true);
 
+            // Убираем формулировки для ИП
+            doc.Replace("{ClientPreambleRepresentativeStart}", IsIndividualEntrepreneur(client) ? string.Empty : ", в лице ", true, true );
+            doc.Replace("{ClientPreamblePosition}", IsIndividualEntrepreneur(client) ? string.Empty : GetDirectorPosition( client.DirectorPosition, false ), true, true );
+            doc.Replace("{ClientPreambleFullName}", IsIndividualEntrepreneur(client) ? string.Empty : await morpherService.GetDeclensionAsync( client.Director, MorpherService.RussianCase.Genitive ), true, true );
+            doc.Replace("{ClientPreambleRepresentativeEnd}", IsIndividualEntrepreneur(client) ? string.Empty : ", действующего на основании Устава, ", true, true );
+
+            // Исполнитель
             doc.Replace("{ExecutorOrg}", executor!.Name, true, true);
             doc.Replace("{ExecutorFullName}", await morpherService.GetDeclensionAsync(executor.Director, MorpherService.RussianCase.Genitive), true, true);
             doc.Replace("{ExecutorPosition}", GetDirectorPosition(executor.DirectorPosition, false), true, true);
             doc.Replace("{ExecutorPositionI}", GetDirectorPosition(executor.DirectorPosition, true), true, true);
             doc.Replace("{ExecutorShortName}", await morpherService.GetShortNameAsync(executor.Director, MorpherService.RussianCase.Nominative), true, true);
+            // СРО
+            doc.Replace( "{SRO}", GetSRO( executor.INN ), true, true );
+
 
             doc.Replace("{Price}", string.Format("{0:N2}", order.Price), true, true);
             doc.Replace("{FullPrice}", DecimalConverter.ConvertDecimalToString(order.Price), true, true);
@@ -191,7 +224,8 @@ namespace USProApplication.Services
             }
             else
             {
-                doc.Replace("{NDSNotExist}", "НДС не облагается (Уведомление о возможности применения УСН № 2490 от 03.12.2007 г.)", true, true);
+                string postfix = executor.INN != USProject_INN ? " (Уведомление о возможности применения УСН № 2490 от 03.12.2007 г.)" : string.Empty;
+                doc.Replace("{NDSNotExist}", $"НДС не облагается{postfix}", true, true);
                 doc.Replace("{NDSExist}", string.Empty, true, true);
                 doc.Replace("{NDSType}", "Без налога (НДС)", true, true);
                 doc.Replace("{NDS}", "-", true, true);
@@ -254,6 +288,27 @@ namespace USProApplication.Services
 
             await CreateContractAttachments(order);
         }
+
+        /// <summary>
+        /// Получить СРО в зависимости от ИНН
+        /// </summary>
+        /// <param name="iNN">ИНН</param>
+        /// <returns></returns>
+        private static string GetSRO (string? inn)
+        {
+            if (string.IsNullOrWhiteSpace(inn))
+                return string.Empty;
+
+            return inn switch
+            {
+                // Ю.С. Про
+                USPro_INN => "член саморегулируемой организации Ассоциация проектировщиков саморегулируемая организация «Объединение проектных организаций «ЭкспертПроект» СРО-П-182-02042013 с 12.01.2018г., ",
+                // Ю.С. Проджект
+                USProject_INN => "член саморегулируемой организации Ассоциация организаций, осуществляющих проектирование энергетических объектов «ЭНЕРГОПРОЕКТ» СРО-П-068- 02122009 с 28.01.2020г., ",
+                _ => string.Empty,
+            };
+        }
+
         private async Task CreateContractAttachments(OrderDTO order)
         {
             string templatePath = Path.Combine("Templates", "ContractAttachment.docx");
@@ -448,7 +503,8 @@ namespace USProApplication.Services
             }
             else
             {
-                doc.Replace("{NDSNotExist}", "НДС не облагается (Уведомление о возможности применения УСН № 2490 от 03.12.2007 г.)", true, true);
+                string postfix = executor.INN != USProject_INN ? " (Уведомление о возможности применения УСН № 2490 от 03.12.2007 г.)" : string.Empty;
+                doc.Replace( "{NDSNotExist}", $"НДС не облагается{postfix}", true, true );
                 doc.Replace("{NDSExist}", string.Empty, true, true);
                 doc.Replace("{NDSType}", "Без налога (НДС)", true, true);
                 doc.Replace("{NDS}", "-", true, true);
@@ -663,6 +719,24 @@ namespace USProApplication.Services
 
                 client = await counterpartyRepository.GetByIdAsync((Guid)order.ParentOrder!.CustomerId!);
                 executor = await counterpartyRepository.GetByIdAsync((Guid)order.ParentOrder!.ExecutorId!);
+            }
+
+            // Добавление спииска услуг при наличии
+            if (order.SelectedServicesIds != null)
+            {
+                var services = new List<string>();
+                var servicesCollection = await serviceRepository.GetAllAsync();
+                foreach (var serviceId in order.SelectedServicesIds)
+                {
+                    Service? service = servicesCollection.FirstOrDefault( s => s.Id == serviceId );
+
+                    if (service != null)
+                    {
+                        services.Add(service.Abbreviation);
+                    }
+                }
+
+                doc.Replace( "{Services}", string.Join(", ", services), true, true );
             }
 
             var morpherService = new MorpherService();
@@ -919,6 +993,28 @@ namespace USProApplication.Services
                 DirectorPositions.None => string.Empty,
                 _ => throw new NotImplementedException()
             };
+        }
+
+        /// <summary>
+        /// Возвращает слово "именуемый" или "именуемое" для преамбулы договора.
+        /// </summary>
+        /// <param name="counterparty">Контрагент.</param>
+        /// <returns>Форма слова для преамбулы договора.</returns>
+        private static string GetNamedAsDescription (CounterpartyDTO? counterparty)
+        {
+            return IsIndividualEntrepreneur( counterparty )
+                ? "именуемый"
+                : "именуемое";
+        }
+
+        /// <summary>
+        /// Определяет, является ли контрагент индивидуальным предпринимателем.
+        /// </summary>
+        /// <param name="counterparty">Контрагент.</param>
+        /// <returns>Признак индивидуального предпринимателя.</returns>
+        private static bool IsIndividualEntrepreneur (CounterpartyDTO? counterparty)
+        {
+            return counterparty != null && counterparty.INN != null && counterparty.INN.Trim().Length == 12;
         }
     }
 
