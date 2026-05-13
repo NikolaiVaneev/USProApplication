@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:USProApplication"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:vm="clr-namespace:USProApplication.ViewModels"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
