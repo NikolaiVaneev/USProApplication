@@ -126,15 +126,30 @@ namespace USProApplication.Services
 
             var morpherService = new MorpherService();
 
-            doc.Replace("{ClientOrg}", client!.Name, true, true);
-            doc.Replace("{ClientFullName}", await morpherService.GetDeclensionAsync(client.Director, MorpherService.RussianCase.Accusative), true, true);
-            doc.Replace("{ClientPosition}", GetDirectorPosition(client.DirectorPosition, false), true, true);
+            bool isClientIndividualEntrepreneur = IsIndividualEntrepreneur(client);
+
+            string clientFullName = await morpherService.GetDeclensionAsync(
+                client!.Director,
+                MorpherService.RussianCase.Accusative);
+
+            string clientPosition = GetDirectorPosition(client.DirectorPosition, false);
+
+            doc.Replace("{ClientOrg}", client.Name, true, true);
+            doc.Replace("{ClientNamedAs}", GetNamedAsDescription(client), true, true);
+            doc.Replace("{ClientFullName}", clientFullName, true, true);
+            doc.Replace("{ClientPosition}", clientPosition, true, true);
             doc.Replace("{ClientShortName}", await morpherService.GetShortNameAsync(client.Director, MorpherService.RussianCase.Nominative), true, true);
+
+            doc.Replace("{ClientPreambleRepresentativeStart}", isClientIndividualEntrepreneur ? string.Empty : ", в лице ", true, true);
+            doc.Replace("{ClientPreamblePosition}", isClientIndividualEntrepreneur ? string.Empty : clientPosition, true, true);
+            doc.Replace("{ClientPreambleFullName}", isClientIndividualEntrepreneur ? string.Empty : clientFullName, true, true);
+            doc.Replace("{ClientPreambleRepresentativeEnd}", isClientIndividualEntrepreneur ? string.Empty : ", действующего на основании Устава", true, true);
 
             doc.Replace("{ExecutorOrg}", executor!.Name, true, true);
             doc.Replace("{ExecutorFullName}", await morpherService.GetDeclensionAsync(executor.Director, MorpherService.RussianCase.Accusative), true, true);
             doc.Replace("{ExecutorPosition}", GetDirectorPosition(executor.DirectorPosition, false), true, true);
             doc.Replace("{ExecutorShortName}", await morpherService.GetShortNameAsync(executor.Director, MorpherService.RussianCase.Nominative), true, true);
+            doc.Replace("{SRO}", GetSRO(executor.INN), true, true);
 
             try
             {
