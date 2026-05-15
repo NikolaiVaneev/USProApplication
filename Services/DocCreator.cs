@@ -100,28 +100,37 @@ namespace USProApplication.Services
                 doc.Replace("{ContractDate}", DateConverter.ConvertDateToString(order.ParentOrder.StartDate), true, true);
             }
 
-            doc.Replace("{Date}", DateConverter.ConvertDateToString(DateTime.Now), true, true);
+            doc.Replace("{Date}", DateConverter.ConvertDateToString(order.СompletionDate), true, true);
             doc.Replace("{Price}", string.Format("{0:N2}", order.Price), true, true);
             doc.Replace("{FullPrice}", DecimalConverter.ConvertDecimalToString(order.Price), true, true);
 
             if (order.SelectedServicesIds != null)
             {
-                var services = new StringBuilder();
                 var servicesCollection = await serviceRepository.GetAllAsync();
 
-                foreach (var serviceId in order.SelectedServicesIds)
-                {
-                    var service = servicesCollection.FirstOrDefault(s => s.Id == serviceId);
+                var selectedServices = order.SelectedServicesIds
+                    .Select( serviceId => servicesCollection.FirstOrDefault( s => s.Id == serviceId ) )
+                    .Where( service => service != null )
+                    .ToList();
 
-                    if (service != null)
+                var services = new StringBuilder();
+
+                for (int i = 0; i < selectedServices.Count; i++)
+                {
+                    var service = selectedServices[i];
+
+                    bool isLast = i == selectedServices.Count - 1;
+                    string ending = isLast ? "." : ",";
+
+                    services.Append( $"- Раздел «{service!.Name}»{ending}" );
+
+                    if (!isLast)
                     {
-                        services.Append($"- Раздел «{service.Name}»,\n");
+                        services.AppendLine();
                     }
                 }
 
-                services.Append("- Согласование проектной документации с Арендодателем.");
-
-                doc.Replace("{Services}", services.ToString(), true, true);
+                doc.Replace( "{Services}", services.ToString(), true, true );
             }
 
             var morpherService = new MorpherService();
