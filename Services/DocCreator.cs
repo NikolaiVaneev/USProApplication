@@ -139,13 +139,12 @@ namespace USProApplication.Services
 
             string clientFullName = await morpherService.GetDeclensionAsync(
                 client!.Director,
-                MorpherService.RussianCase.Accusative);
+                MorpherService.RussianCase.Genitive );
 
             string clientPosition = GetDirectorPosition(client.DirectorPosition, false);
 
             doc.Replace("{ClientOrg}", client.Name, true, true);
             doc.Replace("{ClientNamedAs}", GetNamedAsDescription(client), true, true);
-            doc.Replace("{ClientFullName}", clientFullName, true, true);
             doc.Replace("{ClientPosition}", clientPosition, true, true);
             doc.Replace("{ClientShortName}", await morpherService.GetShortNameAsync(client.Director, MorpherService.RussianCase.Nominative), true, true);
 
@@ -190,7 +189,7 @@ namespace USProApplication.Services
             }
 
             doc.Replace("{ContractNumber}", order.Number, true, true);
-            doc.Replace("{ContractDate}", $"{DateConverter.ConvertDateToString(DateTime.Now)}", true, true);
+            doc.Replace("{ContractDate}", $"{DateConverter.ConvertDateToString(order.StartDate)}", true, true);
             doc.Replace("{Address}", order.Address, true, true);
             doc.Replace("{Square}", GetNumberDescription(order.Square, true), true, true);
             doc.Replace("{Deadline}", GetNumberDescription(order.Term), true, true);
@@ -462,6 +461,7 @@ namespace USProApplication.Services
             doc.Replace("{ClientFullName}", clientFullName, true, true);
             doc.Replace("{ClientPosition}", clientPosition, true, true);
             doc.Replace("{ClientShortName}", await morpherService.GetShortNameAsync(client.Director, MorpherService.RussianCase.Nominative), true, true);
+            doc.Replace("{ClientPositionI}", GetDirectorPosition( client.DirectorPosition, true), true, true);
 
             doc.Replace("{ClientPreambleRepresentativeStart}", isClientIndividualEntrepreneur ? string.Empty : ", в лице ", true, true);
             doc.Replace("{ClientPreamblePosition}", isClientIndividualEntrepreneur ? string.Empty : clientPosition, true, true);
@@ -1114,9 +1114,69 @@ namespace USProApplication.Services
         /// <returns>Форма слова для преамбулы договора.</returns>
         private static string GetNamedAsDescription(CounterpartyDTO? counterparty)
         {
-            return IsIndividualEntrepreneur(counterparty)
-                ? "именуемый"
-                : "именуемое";
+            if (!IsIndividualEntrepreneur( counterparty ))
+            {
+                return "именуемое";
+            }
+
+            return IsFemaleIndividualEntrepreneur( counterparty )
+                ? "именуемая"
+                : "именуемый";
+        }
+
+        /// <summary>
+        /// Определяет, является ли индивидуальный предприниматель женщиной.
+        /// </summary>
+        /// <param name="counterparty">Контрагент.</param>
+        /// <returns>Признак женского рода.</returns>
+        private static bool IsFemaleIndividualEntrepreneur (CounterpartyDTO? counterparty)
+        {
+            string? fullName = counterparty?.Director;
+
+            if (string.IsNullOrWhiteSpace( fullName ))
+            {
+                return false;
+            }
+
+            string[] parts = fullName.Split(
+                ' ',
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries );
+
+            if (parts.Length == 0)
+            {
+                return false;
+            }
+
+            // Основной признак - отчество: Ивановна, Петровна, Ильинична.
+            if (parts.Length >= 3)
+            {
+                string patronymic = parts[2].Trim( '.', ',', ';' );
+
+                if (patronymic.EndsWith( "вна", StringComparison.OrdinalIgnoreCase ) ||
+                    patronymic.EndsWith( "чна", StringComparison.OrdinalIgnoreCase ) ||
+                    patronymic.EndsWith( "кызы", StringComparison.OrdinalIgnoreCase ))
+                {
+                    return true;
+                }
+
+                if (patronymic.EndsWith( "вич", StringComparison.OrdinalIgnoreCase ) ||
+                    patronymic.EndsWith( "ич", StringComparison.OrdinalIgnoreCase ) ||
+                    patronymic.EndsWith( "оглы", StringComparison.OrdinalIgnoreCase ))
+                {
+                    return false;
+                }
+            }
+
+            // Запасной признак - фамилия: Иванова, Петрова, Синицына, Садовая.
+            string surname = parts[0].Trim( '.', ',', ';' );
+
+            return surname.EndsWith( "ова", StringComparison.OrdinalIgnoreCase ) ||
+                   surname.EndsWith( "ева", StringComparison.OrdinalIgnoreCase ) ||
+                   surname.EndsWith( "ина", StringComparison.OrdinalIgnoreCase ) ||
+                   surname.EndsWith( "ая", StringComparison.OrdinalIgnoreCase ) ||
+                   surname.EndsWith( "яя", StringComparison.OrdinalIgnoreCase ) ||
+                   surname.EndsWith( "ская", StringComparison.OrdinalIgnoreCase ) ||
+                   surname.EndsWith( "цкая", StringComparison.OrdinalIgnoreCase );
         }
 
         /// <summary>
